@@ -44,9 +44,54 @@ function parseCsv(content) {
   return rows;
 }
 
-// ========== 截圖解析：URL 直接用，資料夾名稱則掃描所有圖片 ==========
+// ========== 截圖檔名標準化 (單張: deal_screenshot.png, 多張: deal_screenshot1.png, deal_screenshot2.png...) ==========
 
 const IMG_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
+
+function normalizeScreenshotFilenames() {
+  const screenshotRoot = path.join(__dirname, 'screenshot');
+  if (!fs.existsSync(screenshotRoot)) return;
+
+  const folders = fs.readdirSync(screenshotRoot).filter(f => {
+    const p = path.join(screenshotRoot, f);
+    return fs.statSync(p).isDirectory();
+  });
+
+  folders.forEach(folder => {
+    const dir = path.join(screenshotRoot, folder);
+    const files = fs.readdirSync(dir).filter(f => {
+      return IMG_EXTS.includes(path.extname(f).toLowerCase());
+    });
+
+    if (files.length === 0) return;
+
+    if (files.length === 1) {
+      const ext = path.extname(files[0]).toLowerCase();
+      const targetName = 'deal_screenshot' + ext;
+      if (files[0] !== targetName) {
+        fs.renameSync(path.join(dir, files[0]), path.join(dir, targetName));
+        console.log(`  🔄 截圖檔名標準化 [${folder}]: ${files[0]} -> ${targetName}`);
+      }
+    } else {
+      // 多張圖片：依自然排序後重新命名為 deal_screenshot1.png, deal_screenshot2.png...
+      files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+      const tempItems = [];
+      files.forEach((f, idx) => {
+        const ext = path.extname(f).toLowerCase();
+        const tempName = `__temp_${Date.now()}_${idx}${ext}`;
+        const targetName = `deal_screenshot${idx + 1}${ext}`;
+        fs.renameSync(path.join(dir, f), path.join(dir, tempName));
+        tempItems.push({ tempName, targetName });
+      });
+      tempItems.forEach(item => {
+        fs.renameSync(path.join(dir, item.tempName), path.join(dir, item.targetName));
+      });
+      console.log(`  🔄 截圖檔名標準化 [${folder}]: 共 ${files.length} 張已編號為 deal_screenshot1 ~ ${tempItems.length}`);
+    }
+  });
+}
+
+// ========== 截圖解析：URL 直接用，資料夾名稱則掃描所有圖片 ==========
 
 function resolveScreenshots(value) {
   if (!value) return [];
@@ -61,7 +106,7 @@ function resolveScreenshots(value) {
     if (stat.isDirectory()) {
       const imgs = fs.readdirSync(targetPath)
         .filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
-        .sort();
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
       if (imgs.length > 0) {
         return imgs.map(f => 'screenshot/' + encodeURIComponent(value) + '/' + encodeURIComponent(f));
       }
@@ -100,6 +145,9 @@ function esc(s) {
 }
 
 // ========== 主流程 ==========
+
+// 先標準化所有 screenshot 資料夾中的檔案名稱
+normalizeScreenshotFilenames();
 
 const csvPath = path.join(__dirname, 'data', 'deals.csv');
 if (!fs.existsSync(csvPath)) { console.error('❌ 找不到 data/deals.csv'); process.exit(1); }
