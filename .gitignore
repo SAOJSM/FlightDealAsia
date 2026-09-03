@@ -1,6 +1,25 @@
+# Dependencies
 node_modules/
+
+# OS & Environment
 .DS_Store
 Thumbs.db
 *.log
+*.tmp
+*.bak
+
+# IDE & Editor
 .vscode/
 .idea/
+
+# Local archives & build outputs
+*.zip
+*.rar
+*.7z
+
+# Local tooling & drafts
+*.bat
+*.cmd
+*.ps1
+DEV_PLAN.md
+INTERNAL_*.md
