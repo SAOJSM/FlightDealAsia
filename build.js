@@ -194,7 +194,7 @@ const html = `<!DOCTYPE html>
 
 <div class="container">
   <header class="site-header">
-    <h1>✈️ 便宜機票 Deals</h1>
+    <h1><span class="header-icon">✈️</span><span class="header-title-text">便宜機票 Deals</span></h1>
     <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
     <div class="header-stats">
       <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">${deals.length}</span><span>筆 Deal</span></div>
