@@ -1,0 +1,8 @@
+{
+  "name": "flight-deals",
+  "version": "1.0.0",
+  "description": "便宜機票 Deal 展示靜態網頁",
+  "scripts": {
+    "build": "node build.js"
+  }
+}

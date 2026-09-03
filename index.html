@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="最新便宜機票 Deal 資訊，每日更新超值航班優惠">
+  <title>✈️ 便宜機票 Deals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+
+<div class="container">
+  <header class="site-header">
+    <h1>✈️ 便宜機票 Deals</h1>
+    <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
+    <div class="header-stats">
+      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">5</span><span>筆 Deal</span></div>
+      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/09/04 上午03:20</span></div>
+    </div>
+  </header>
+
+  <section class="filter-panel">
+    <div class="filter-title">🔍 篩選條件</div>
+    <div class="filter-row">
+      <div class="filter-group">
+        <label for="filter-departure">出發地</label>
+        <select id="filter-departure"><option value="">全部</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-destination">到達地</label>
+        <select id="filter-destination"><option value="">全部</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-airline">航空公司</label>
+        <select id="filter-airline"><option value="">全部</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="sort-price">價格排序</label>
+        <select id="sort-price">
+          <option value="">預設（最新）</option>
+          <option value="asc">低 → 高</option>
+          <option value="desc">高 → 低</option>
+        </select>
+      </div>
+      <button class="btn-clear" id="clear-filters">清除篩選</button>
+    </div>
+  </section>
+
+  <section class="table-section">
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr><th>日期</th><th>出發地</th><th>到達地</th><th>價格</th><th>航空公司</th><th>DEAL 截圖</th></tr>
+        </thead>
+        <tbody id="deals-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer class="site-footer">便宜機票 Deals &mdash; 資料每次 commit 後自動更新 &middot; 僅顯示最近 3 天</footer>
+</div>
+
+<!-- 截圖浮動預覽（支援多張圖片 + 捲動） -->
+<div class="screenshot-tooltip" id="screenshot-tooltip">
+  <div class="tooltip-gallery" id="tooltip-gallery"></div>
+  <div class="tooltip-counter" id="tooltip-counter"></div>
+</div>
+
+<script>
+(function() {
+  var DEALS = [{"日期":"2026-09-04","出發地":"TPE 台北","到達地":"NRT 東京","價格":"4500","航空公司":"台灣虎航","截圖連結":"https://picsum.photos/seed/deal1/600/400","_imgs":["https://picsum.photos/seed/deal1/600/400"]},{"日期":"2026-09-04","出發地":"TPE 台北","到達地":"ICN 首爾","價格":"3800","航空公司":"酷航","截圖連結":"https://picsum.photos/seed/deal2/600/400","_imgs":["https://picsum.photos/seed/deal2/600/400"]},{"日期":"2026-09-03","出發地":"TPE 台北","到達地":"BKK 曼谷","價格":"5200","航空公司":"亞洲航空","截圖連結":"https://picsum.photos/seed/deal3/600/400","_imgs":["https://picsum.photos/seed/deal3/600/400"]},{"日期":"2026-09-03","出發地":"KHH 高雄","到達地":"NRT 東京","價格":"4200","航空公司":"樂桃航空","截圖連結":"https://picsum.photos/seed/deal4/600/400","_imgs":["https://picsum.photos/seed/deal4/600/400"]},{"日期":"2026-09-02","出發地":"TPE 台北","到達地":"SGN 胡志明市","價格":"3500","航空公司":"越捷航空","截圖連結":"https://picsum.photos/seed/deal5/600/400","_imgs":["https://picsum.photos/seed/deal5/600/400"]}];
+
+  var depF  = document.getElementById('filter-departure');
+  var destF = document.getElementById('filter-destination');
+  var airF  = document.getElementById('filter-airline');
+  var sortS = document.getElementById('sort-price');
+  var tbody = document.getElementById('deals-body');
+  var cntEl = document.getElementById('deal-count');
+  var tip   = document.getElementById('screenshot-tooltip');
+  var gallery = document.getElementById('tooltip-gallery');
+  var counter = document.getElementById('tooltip-counter');
+  var hideTimer = null;
+
+  /* ---- 工具函式 ---- */
+  function e(s) { var d=document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
+  function ea(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function fmtP(v) { var n=parseInt(v,10); return isNaN(n)?v:'NT$ '+n.toLocaleString(); }
+
+  /* ---- 填充下拉選單 ---- */
+  function uniq(key) {
+    var m={}, a=[];
+    DEALS.forEach(function(d){ if(d[key]&&!m[d[key]]){m[d[key]]=1;a.push(d[key]);} });
+    return a.sort();
+  }
+  function fill(sel,items) {
+    items.forEach(function(t){ var o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+  }
+  fill(depF, uniq('出發地'));
+  fill(destF, uniq('到達地'));
+  fill(airF, uniq('航空公司'));
+
+  /* ---- 篩選 + 渲染 ---- */
+  function render() {
+    var list = DEALS.filter(function(d) {
+      if (depF.value  && d['出發地']  !== depF.value)  return false;
+      if (destF.value && d['到達地']  !== destF.value) return false;
+      if (airF.value  && d['航空公司'] !== airF.value)  return false;
+      return true;
+    });
+    if (sortS.value==='asc')  list.sort(function(a,b){return parseFloat(a['價格'])-parseFloat(b['價格']);});
+    if (sortS.value==='desc') list.sort(function(a,b){return parseFloat(b['價格'])-parseFloat(a['價格']);});
+    cntEl.textContent = list.length;
+
+    if (list.length===0) {
+      tbody.innerHTML='<tr><td colspan="6" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
+      return;
+    }
+
+    var h='';
+    list.forEach(function(d,i) {
+      var imgs = d._imgs || [];
+      var imgsAttr = ea(JSON.stringify(imgs));
+      var cntTxt = imgs.length>1 ? ' ('+imgs.length+')' : '';
+      h+='<tr style="animation-delay:'+(i*0.05)+'s">'
+        +'<td>'+e(d['日期'])+'</td>'
+        +'<td><span class="badge departure">'+e(d['出發地'])+'</span></td>'
+        +'<td><span class="badge destination">'+e(d['到達地'])+'</span></td>'
+        +'<td class="price">'+fmtP(d['價格'])+'</td>'
+        +'<td><span class="badge airline">'+e(d['航空公司'])+'</span></td>'
+        +'<td class="screenshot-cell" data-imgs="'+imgsAttr+'">'
+        +(imgs.length>0
+          ? '<span class="screenshot-icon">🖼️ 預覽'+cntTxt+'</span>'
+          : '<span class="screenshot-none">—</span>')
+        +'</td></tr>';
+    });
+    tbody.innerHTML=h;
+
+    var cells=document.querySelectorAll('.screenshot-cell');
+    for(var j=0;j<cells.length;j++){
+      cells[j].addEventListener('mouseenter', showTip);
+      cells[j].addEventListener('mouseleave', delayHide);
+    }
+  }
+
+  /* ---- 截圖浮動預覽（支援多張 + 捲動） ---- */
+  function showTip(ev) {
+    clearTimeout(hideTimer);
+    var imgs;
+    try { imgs=JSON.parse(ev.currentTarget.getAttribute('data-imgs')); } catch(x){ imgs=[]; }
+    if(!imgs||imgs.length===0) return;
+
+    var gh='';
+    for(var i=0;i<imgs.length;i++) gh+='<img src="'+e(imgs[i])+'" alt="Deal 截圖" loading="lazy">';
+    gallery.innerHTML=gh;
+    counter.textContent='共 '+imgs.length+' 張截圖';
+    counter.style.display=imgs.length>1?'':'none';
+
+    // 定位：優先顯示在按鈕左側，空間不足則右側
+    var rect=ev.currentTarget.getBoundingClientRect();
+    var tw=420, x=rect.left-tw-12, y=rect.top;
+    if(x<10) x=rect.right+12;
+    if(y+400>window.innerHeight) y=Math.max(10,window.innerHeight-410);
+    tip.style.left=x+'px'; tip.style.top=y+'px';
+    tip.classList.add('visible');
+  }
+
+  function delayHide() { hideTimer=setTimeout(hideTip, 250); }
+  function hideTip()   { tip.classList.remove('visible'); gallery.innerHTML=''; }
+
+  tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
+  tip.addEventListener('mouseleave', hideTip);
+
+  /* ---- 事件 ---- */
+  depF.addEventListener('change', render);
+  destF.addEventListener('change', render);
+  airF.addEventListener('change', render);
+  sortS.addEventListener('change', render);
+  document.getElementById('clear-filters').addEventListener('click', function(){
+    depF.value=''; destF.value=''; airF.value=''; sortS.value=''; render();
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
