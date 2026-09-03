@@ -298,6 +298,14 @@ tbody td {
   font-weight: 500;
 }
 
+.badge.days {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
 .badge.departure {
   background: rgba(59, 130, 246, 0.15);
   color: var(--accent-blue);

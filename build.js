@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-// ========== CSV Parser（零依賴）==========
+// ========== CSV Parser（零依賴、容錯處理）==========
 
 function parseCsvLine(line) {
   const fields = [];
@@ -25,8 +25,18 @@ function parseCsv(content) {
   const headers = parseCsvLine(lines[0]);
   const rows = [];
   for (let i = 1; i < lines.length; i++) {
-    const vals = parseCsvLine(lines[i]);
+    let vals = parseCsvLine(lines[i]);
     if (vals.every(v => v === '')) continue;
+
+    // 容錯：若價格中含有千分位逗號未加引號（如 17,231 導致欄位比標題多 1 個），自動修復
+    if (vals.length === headers.length + 1) {
+      const priceIdx = headers.indexOf('價格');
+      if (priceIdx !== -1 && /^\d+$/.test(vals[priceIdx]) && /^\d+$/.test(vals[priceIdx + 1])) {
+        vals[priceIdx] = vals[priceIdx] + vals[priceIdx + 1];
+        vals.splice(priceIdx + 1, 1);
+      }
+    }
+
     const row = {};
     headers.forEach((h, idx) => { row[h] = vals[idx] || ''; });
     rows.push(row);
@@ -34,34 +44,42 @@ function parseCsv(content) {
   return rows;
 }
 
-// ========== 截圖解析：URL 直接用，資料夾名稱則掃描圖片 ==========
+// ========== 截圖解析：URL 直接用，資料夾名稱則掃描所有圖片 ==========
 
 const IMG_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
 
 function resolveScreenshots(value) {
   if (!value) return [];
 
-  // 判斷是否為網址
+  // 1. 判斷是否為外部網址
   if (/^https?:\/\//i.test(value)) return [value];
 
-  // 視為 screenshot/ 下的資料夾名稱
-  const dir = path.join(__dirname, 'screenshot', value);
-  if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
-    console.warn('  ⚠️  截圖資料夾不存在: screenshot/' + value);
-    return [];
+  // 2. 視為 screenshot/ 下的資料夾
+  const targetPath = path.join(__dirname, 'screenshot', value);
+  if (fs.existsSync(targetPath)) {
+    const stat = fs.statSync(targetPath);
+    if (stat.isDirectory()) {
+      const imgs = fs.readdirSync(targetPath)
+        .filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
+        .sort();
+      if (imgs.length > 0) {
+        return imgs.map(f => 'screenshot/' + encodeURIComponent(value) + '/' + encodeURIComponent(f));
+      }
+    } else if (stat.isFile() && IMG_EXTS.includes(path.extname(targetPath).toLowerCase())) {
+      return ['screenshot/' + encodeURIComponent(value)];
+    }
   }
 
-  const imgs = fs.readdirSync(dir)
-    .filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
-    .sort();
-
-  if (imgs.length === 0) {
-    console.warn('  ⚠️  資料夾內無圖片: screenshot/' + value);
-    return [];
+  // 3. 檢查是否有同名圖片檔案（例如 2026-11-18國航.png）
+  for (const ext of IMG_EXTS) {
+    const fileWithExt = path.join(__dirname, 'screenshot', value + ext);
+    if (fs.existsSync(fileWithExt)) {
+      return ['screenshot/' + encodeURIComponent(value + ext)];
+    }
   }
 
-  // 回傳相對路徑（GitHub Pages 可直接存取）
-  return imgs.map(f => 'screenshot/' + value + '/' + f);
+  console.warn('  ⚠️  截圖資源未找到: screenshot/' + value);
+  return [];
 }
 
 // ========== 日期過濾：僅保留最近 N 天 ==========
@@ -139,6 +157,10 @@ const html = `<!DOCTYPE html>
         <select id="filter-destination"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
+        <label for="filter-days">旅遊天數</label>
+        <select id="filter-days"><option value="">全部</option></select>
+      </div>
+      <div class="filter-group">
         <label for="filter-airline">航空公司</label>
         <select id="filter-airline"><option value="">全部</option></select>
       </div>
@@ -158,7 +180,15 @@ const html = `<!DOCTYPE html>
     <div class="table-wrapper">
       <table>
         <thead>
-          <tr><th>日期</th><th>出發地</th><th>到達地</th><th>價格</th><th>航空公司</th><th>DEAL 截圖</th></tr>
+          <tr>
+            <th>日期</th>
+            <th>天數</th>
+            <th>出發地</th>
+            <th>到達地</th>
+            <th>價格</th>
+            <th>航空公司</th>
+            <th>DEAL 截圖</th>
+          </tr>
         </thead>
         <tbody id="deals-body"></tbody>
       </table>
@@ -180,6 +210,7 @@ const html = `<!DOCTYPE html>
 
   var depF  = document.getElementById('filter-departure');
   var destF = document.getElementById('filter-destination');
+  var daysF = document.getElementById('filter-days');
   var airF  = document.getElementById('filter-airline');
   var sortS = document.getElementById('sort-price');
   var tbody = document.getElementById('deals-body');
@@ -192,19 +223,34 @@ const html = `<!DOCTYPE html>
   /* ---- 工具函式 ---- */
   function e(s) { var d=document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
   function ea(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-  function fmtP(v) { var n=parseInt(v,10); return isNaN(n)?v:'NT$ '+n.toLocaleString(); }
+  function numPrice(v) { var n = parseFloat(String(v || '').replace(/,/g, '')); return isNaN(n) ? 0 : n; }
+  function fmtP(v) {
+    var n = numPrice(v);
+    return n === 0 ? e(v) : 'NT$ ' + n.toLocaleString();
+  }
 
   /* ---- 填充下拉選單 ---- */
   function uniq(key) {
     var m={}, a=[];
     DEALS.forEach(function(d){ if(d[key]&&!m[d[key]]){m[d[key]]=1;a.push(d[key]);} });
-    return a.sort();
+    return a.sort(function(x, y) {
+      var nx = parseFloat(x), ny = parseFloat(y);
+      if (!isNaN(nx) && !isNaN(ny)) return nx - ny;
+      return x.localeCompare(y);
+    });
   }
-  function fill(sel,items) {
-    items.forEach(function(t){ var o=document.createElement('option'); o.value=t; o.textContent=t; sel.appendChild(o); });
+  function fill(sel, items, suffix) {
+    suffix = suffix || '';
+    items.forEach(function(t){
+      var o=document.createElement('option');
+      o.value=t;
+      o.textContent=t + suffix;
+      sel.appendChild(o);
+    });
   }
   fill(depF, uniq('出發地'));
   fill(destF, uniq('到達地'));
+  fill(daysF, uniq('天數'), ' 天');
   fill(airF, uniq('航空公司'));
 
   /* ---- 篩選 + 渲染 ---- */
@@ -212,15 +258,16 @@ const html = `<!DOCTYPE html>
     var list = DEALS.filter(function(d) {
       if (depF.value  && d['出發地']  !== depF.value)  return false;
       if (destF.value && d['到達地']  !== destF.value) return false;
+      if (daysF.value && d['天數']    !== daysF.value) return false;
       if (airF.value  && d['航空公司'] !== airF.value)  return false;
       return true;
     });
-    if (sortS.value==='asc')  list.sort(function(a,b){return parseFloat(a['價格'])-parseFloat(b['價格']);});
-    if (sortS.value==='desc') list.sort(function(a,b){return parseFloat(b['價格'])-parseFloat(a['價格']);});
+    if (sortS.value==='asc')  list.sort(function(a,b){return numPrice(a['價格']) - numPrice(b['價格']);});
+    if (sortS.value==='desc') list.sort(function(a,b){return numPrice(b['價格']) - numPrice(a['價格']);});
     cntEl.textContent = list.length;
 
     if (list.length===0) {
-      tbody.innerHTML='<tr><td colspan="6" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
+      tbody.innerHTML='<tr><td colspan="7" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
       return;
     }
 
@@ -229,8 +276,10 @@ const html = `<!DOCTYPE html>
       var imgs = d._imgs || [];
       var imgsAttr = ea(JSON.stringify(imgs));
       var cntTxt = imgs.length>1 ? ' ('+imgs.length+')' : '';
+      var daysTxt = d['天數'] ? e(d['天數']) + ' 天' : '—';
       h+='<tr style="animation-delay:'+(i*0.05)+'s">'
         +'<td>'+e(d['日期'])+'</td>'
+        +'<td><span class="badge days">'+daysTxt+'</span></td>'
         +'<td><span class="badge departure">'+e(d['出發地'])+'</span></td>'
         +'<td><span class="badge destination">'+e(d['到達地'])+'</span></td>'
         +'<td class="price">'+fmtP(d['價格'])+'</td>'
@@ -258,16 +307,16 @@ const html = `<!DOCTYPE html>
     if(!imgs||imgs.length===0) return;
 
     var gh='';
-    for(var i=0;i<imgs.length;i++) gh+='<img src="'+e(imgs[i])+'" alt="Deal 截圖" loading="lazy">';
+    for(var i=0;i<imgs.length;i++) gh+='<img src="'+imgs[i]+'" alt="Deal 截圖" loading="lazy">';
     gallery.innerHTML=gh;
     counter.textContent='共 '+imgs.length+' 張截圖';
     counter.style.display=imgs.length>1?'':'none';
 
     // 定位：優先顯示在按鈕左側，空間不足則右側
     var rect=ev.currentTarget.getBoundingClientRect();
-    var tw=420, x=rect.left-tw-12, y=rect.top;
+    var tw=400, x=rect.left-tw-12, y=rect.top;
     if(x<10) x=rect.right+12;
-    if(y+400>window.innerHeight) y=Math.max(10,window.innerHeight-410);
+    if(y+420>window.innerHeight) y=Math.max(10,window.innerHeight-430);
     tip.style.left=x+'px'; tip.style.top=y+'px';
     tip.classList.add('visible');
   }
@@ -281,10 +330,11 @@ const html = `<!DOCTYPE html>
   /* ---- 事件 ---- */
   depF.addEventListener('change', render);
   destF.addEventListener('change', render);
+  daysF.addEventListener('change', render);
   airF.addEventListener('change', render);
   sortS.addEventListener('change', render);
   document.getElementById('clear-filters').addEventListener('click', function(){
-    depF.value=''; destF.value=''; airF.value=''; sortS.value=''; render();
+    depF.value=''; destF.value=''; daysF.value=''; airF.value=''; sortS.value=''; render();
   });
 
   render();
@@ -303,7 +353,7 @@ console.log('  📊 總筆數: ' + allDeals.length);
 console.log('  ✈️  顯示筆數: ' + deals.length + ' (最近 3 天)');
 deals.forEach(d => {
   const n = d._imgs.length;
-  console.log('     • ' + d['出發地'] + ' → ' + d['到達地'] + ' | 截圖: ' + (n > 0 ? n + ' 張' : '無'));
+  console.log('     • ' + d['日期'] + ' [' + (d['天數'] || '?') + '天] ' + d['出發地'] + ' → ' + d['到達地'] + ' | 價格: ' + d['價格'] + ' | 截圖: ' + (n > 0 ? n + ' 張' : '無'));
 });
 console.log('  🕐 構建時間: ' + buildTime);
 console.log('');
