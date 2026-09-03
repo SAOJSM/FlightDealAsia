@@ -364,20 +364,23 @@ tbody td {
   transform: scale(1.05);
 }
 
-/* ===== Screenshot Tooltip（多圖支援 + 捲動）===== */
+/* ===== Screenshot Tooltip（大圖預覽 + 捲動 + 點擊開新視窗）===== */
 .screenshot-tooltip {
   position: fixed;
   z-index: 1000;
   pointer-events: none;
   opacity: 0;
-  transform: scale(0.95);
+  transform: scale(0.96);
   transition: opacity 0.2s ease, transform 0.2s ease;
-  background: var(--bg-secondary);
+  background: rgba(17, 17, 39, 0.95);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  padding: 8px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(102, 126, 234, 0.1);
-  width: 400px;
+  padding: 12px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6), 0 0 50px rgba(102, 126, 234, 0.15);
+  width: 560px;
+  max-width: 90vw;
 }
 
 .screenshot-tooltip.visible {
@@ -386,33 +389,105 @@ tbody td {
   pointer-events: auto;
 }
 
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2px 4px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 10px;
+}
+
+.tooltip-hint {
+  font-size: 0.78rem;
+  color: var(--accent-cyan);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tooltip-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.tooltip-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
 .tooltip-gallery {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-height: 420px;
+  gap: 12px;
+  max-height: 520px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
 
-.tooltip-gallery::-webkit-scrollbar { width: 5px; }
+.tooltip-gallery::-webkit-scrollbar { width: 6px; }
 .tooltip-gallery::-webkit-scrollbar-track { background: transparent; }
-.tooltip-gallery::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+.tooltip-gallery::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.25); border-radius: 3px; }
 
-.tooltip-gallery img {
+.gallery-item {
+  position: relative;
+  display: block;
+  text-decoration: none;
+  border-radius: calc(var(--radius) - 4px);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s, transform 0.2s;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.gallery-item:hover {
+  border-color: var(--accent-cyan);
+  transform: translateY(-2px);
+}
+
+.gallery-item img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: calc(var(--radius) - 4px);
+  max-height: 500px;
   object-fit: contain;
+}
+
+.gallery-item .img-open-badge {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(10, 10, 26, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--text-primary);
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .tooltip-counter {
   text-align: center;
   font-size: 0.75rem;
   color: var(--text-muted);
-  padding: 6px 0 2px;
+  padding: 8px 0 2px;
 }
 
 .screenshot-none {
@@ -443,5 +518,19 @@ tbody td {
   .filter-group { min-width: 100%; }
   .header-stats { flex-direction: column; align-items: center; gap: 12px; }
   thead th, tbody td { padding: 10px 12px; font-size: 0.82rem; }
-  .screenshot-tooltip { max-width: 280px; }
+  .screenshot-tooltip {
+    width: calc(100vw - 24px) !important;
+    max-width: calc(100vw - 24px) !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) scale(0.96) !important;
+    max-height: 85vh;
+  }
+  .screenshot-tooltip.visible {
+    transform: translateY(-50%) scale(1) !important;
+  }
+  .tooltip-gallery {
+    max-height: 65vh;
+  }
 }

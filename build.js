@@ -206,8 +206,12 @@ const html = `<!DOCTYPE html>
   <footer class="site-footer">便宜機票 Deals &mdash; 資料每次 commit 後自動更新 &middot; 僅顯示最近 3 天</footer>
 </div>
 
-<!-- 截圖浮動預覽（支援多張圖片 + 捲動） -->
+<!-- 截圖浮動預覽（大圖預覽 + 捲動 + 點擊開新視窗） -->
 <div class="screenshot-tooltip" id="screenshot-tooltip">
+  <div class="tooltip-header">
+    <span class="tooltip-hint">🔍 點擊圖片在新視窗查看高清大圖</span>
+    <button type="button" class="tooltip-close" id="tooltip-close" title="關閉預覽">✕</button>
+  </div>
   <div class="tooltip-gallery" id="tooltip-gallery"></div>
   <div class="tooltip-counter" id="tooltip-counter"></div>
 </div>
@@ -227,6 +231,7 @@ const html = `<!DOCTYPE html>
   var tip   = document.getElementById('screenshot-tooltip');
   var gallery = document.getElementById('tooltip-gallery');
   var counter = document.getElementById('tooltip-counter');
+  var closeBtn = document.getElementById('tooltip-close');
   var hideTimer = null;
 
   /* ---- 工具函式 ---- */
@@ -297,7 +302,7 @@ const html = `<!DOCTYPE html>
         +'<td class="price">'+fmtP(d['價格'])+'</td>'
         +'<td><span class="badge airline">'+e(d['航空公司'])+'</span></td>'
         +'<td><span class="badge platform">'+platTxt+'</span></td>'
-        +'<td class="screenshot-cell" data-imgs="'+imgsAttr+'">'
+        +'<td class="screenshot-cell" data-imgs="'+imgsAttr+'" title="點擊在新視窗開啟大圖">'
         +(imgs.length>0
           ? '<span class="screenshot-icon">🖼️ 預覽'+cntTxt+'</span>'
           : '<span class="screenshot-none">—</span>')
@@ -309,10 +314,19 @@ const html = `<!DOCTYPE html>
     for(var j=0;j<cells.length;j++){
       cells[j].addEventListener('mouseenter', showTip);
       cells[j].addEventListener('mouseleave', delayHide);
+      cells[j].addEventListener('click', onCellClick);
     }
   }
 
-  /* ---- 截圖浮動預覽（支援多張 + 捲動） ---- */
+  /* ---- 點擊儲存格開啟新視窗 ---- */
+  function onCellClick(ev) {
+    var imgs;
+    try { imgs=JSON.parse(ev.currentTarget.getAttribute('data-imgs')); } catch(x){ imgs=[]; }
+    if(!imgs||imgs.length===0) return;
+    window.open(imgs[0], '_blank', 'noopener,noreferrer');
+  }
+
+  /* ---- 截圖浮動預覽（大圖 + 多張捲動 + 點擊外開） ---- */
   function showTip(ev) {
     clearTimeout(hideTimer);
     var imgs;
@@ -320,25 +334,41 @@ const html = `<!DOCTYPE html>
     if(!imgs||imgs.length===0) return;
 
     var gh='';
-    for(var i=0;i<imgs.length;i++) gh+='<img src="'+imgs[i]+'" alt="Deal 截圖" loading="lazy">';
+    for(var i=0;i<imgs.length;i++) {
+      gh+='<a href="'+imgs[i]+'" target="_blank" rel="noopener" class="gallery-item" title="點擊在新視窗開啟高清原圖">'
+        +'<img src="'+imgs[i]+'" alt="Deal 截圖" loading="lazy">'
+        +'<span class="img-open-badge">🔍 開啟原圖</span>'
+        +'</a>';
+    }
     gallery.innerHTML=gh;
-    counter.textContent='共 '+imgs.length+' 張截圖';
+    counter.textContent='共 '+imgs.length+' 張截圖 (點擊圖片開新視窗)';
     counter.style.display=imgs.length>1?'':'none';
 
-    // 定位：優先顯示在按鈕左側，空間不足則右側
-    var rect=ev.currentTarget.getBoundingClientRect();
-    var tw=400, x=rect.left-tw-12, y=rect.top;
-    if(x<10) x=rect.right+12;
-    if(y+420>window.innerHeight) y=Math.max(10,window.innerHeight-430);
-    tip.style.left=x+'px'; tip.style.top=y+'px';
+    // 定位計算
+    if (window.innerWidth > 768) {
+      var rect=ev.currentTarget.getBoundingClientRect();
+      var tw=Math.min(560, window.innerWidth - 30);
+      var x=rect.left - tw - 16;
+      var y=rect.top - 20;
+      if(x < 12) x = rect.right + 16;
+      if(y + 540 > window.innerHeight) y = Math.max(12, window.innerHeight - 550);
+      if(y < 12) y = 12;
+      tip.style.left=x+'px'; tip.style.top=y+'px';
+    }
     tip.classList.add('visible');
   }
 
-  function delayHide() { hideTimer=setTimeout(hideTip, 250); }
+  function delayHide() { hideTimer=setTimeout(hideTip, 300); }
   function hideTip()   { tip.classList.remove('visible'); gallery.innerHTML=''; }
 
   tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
   tip.addEventListener('mouseleave', hideTip);
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      hideTip();
+    });
+  }
 
   /* ---- 事件 ---- */
   depF.addEventListener('change', render);
