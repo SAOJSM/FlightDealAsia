@@ -172,11 +172,18 @@ const html = `<!DOCTYPE html>
         <select id="filter-platform"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
+        <label for="sort-date">日期排序</label>
+        <select id="sort-date">
+          <option value="desc">新 → 舊 (降冪)</option>
+          <option value="asc">舊 → 新 (升冪)</option>
+        </select>
+      </div>
+      <div class="filter-group">
         <label for="sort-price">價格排序</label>
         <select id="sort-price">
-          <option value="">預設（最新）</option>
-          <option value="asc">低 → 高</option>
-          <option value="desc">高 → 低</option>
+          <option value="">預設 (依日期)</option>
+          <option value="asc">低 → 高 (升冪)</option>
+          <option value="desc">高 → 低 (降冪)</option>
         </select>
       </div>
       <button class="btn-clear" id="clear-filters">清除篩選</button>
@@ -188,11 +195,11 @@ const html = `<!DOCTYPE html>
       <table>
         <thead>
           <tr>
-            <th>日期</th>
+            <th class="sortable" id="th-date" title="點擊切換日期升/降冪">日期 <span class="sort-indicator" id="ind-date">▼</span></th>
             <th>天數</th>
             <th>出發地</th>
             <th>到達地</th>
-            <th>價格</th>
+            <th class="sortable" id="th-price" title="點擊切換價格升/降冪">價格 <span class="sort-indicator" id="ind-price"></span></th>
             <th>航空公司</th>
             <th>購買平台</th>
             <th>DEAL 截圖</th>
@@ -220,17 +227,22 @@ const html = `<!DOCTYPE html>
 (function() {
   var DEALS = ${dealsJson};
 
-  var depF  = document.getElementById('filter-departure');
-  var destF = document.getElementById('filter-destination');
-  var daysF = document.getElementById('filter-days');
-  var airF  = document.getElementById('filter-airline');
-  var platF = document.getElementById('filter-platform');
-  var sortS = document.getElementById('sort-price');
-  var tbody = document.getElementById('deals-body');
-  var cntEl = document.getElementById('deal-count');
-  var tip   = document.getElementById('screenshot-tooltip');
-  var gallery = document.getElementById('tooltip-gallery');
-  var counter = document.getElementById('tooltip-counter');
+  var depF     = document.getElementById('filter-departure');
+  var destF    = document.getElementById('filter-destination');
+  var daysF    = document.getElementById('filter-days');
+  var airF     = document.getElementById('filter-airline');
+  var platF    = document.getElementById('filter-platform');
+  var sortDate = document.getElementById('sort-date');
+  var sortS    = document.getElementById('sort-price');
+  var thDate   = document.getElementById('th-date');
+  var thPrice  = document.getElementById('th-price');
+  var indDate  = document.getElementById('ind-date');
+  var indPrice = document.getElementById('ind-price');
+  var tbody    = document.getElementById('deals-body');
+  var cntEl    = document.getElementById('deal-count');
+  var tip      = document.getElementById('screenshot-tooltip');
+  var gallery  = document.getElementById('tooltip-gallery');
+  var counter  = document.getElementById('tooltip-counter');
   var closeBtn = document.getElementById('tooltip-close');
   var hideTimer = null;
 
@@ -241,6 +253,19 @@ const html = `<!DOCTYPE html>
   function fmtP(v) {
     var n = numPrice(v);
     return n === 0 ? e(v) : 'NT$ ' + n.toLocaleString();
+  }
+
+  function updateSortIndicators() {
+    if (sortS.value === 'asc') {
+      indPrice.textContent = '▲';
+      indDate.textContent = '';
+    } else if (sortS.value === 'desc') {
+      indPrice.textContent = '▼';
+      indDate.textContent = '';
+    } else {
+      indPrice.textContent = '';
+      indDate.textContent = sortDate.value === 'asc' ? '▲' : '▼';
+    }
   }
 
   /* ---- 填充下拉選單 ---- */
@@ -278,8 +303,19 @@ const html = `<!DOCTYPE html>
       if (platF.value && d['購買平台'] !== platF.value) return false;
       return true;
     });
-    if (sortS.value==='asc')  list.sort(function(a,b){return numPrice(a['價格']) - numPrice(b['價格']);});
-    if (sortS.value==='desc') list.sort(function(a,b){return numPrice(b['價格']) - numPrice(a['價格']);});
+
+    // 排序處理：若有選擇價格排序則價格優先，否則依日期升/降冪
+    if (sortS.value === 'asc') {
+      list.sort(function(a,b){ return numPrice(a['價格']) - numPrice(b['價格']); });
+    } else if (sortS.value === 'desc') {
+      list.sort(function(a,b){ return numPrice(b['價格']) - numPrice(a['價格']); });
+    } else {
+      if (sortDate.value === 'asc') {
+        list.sort(function(a,b){ return a['日期'].localeCompare(b['日期']); });
+      } else {
+        list.sort(function(a,b){ return b['日期'].localeCompare(a['日期']); });
+      }
+    }
     cntEl.textContent = list.length;
 
     if (list.length===0) {
@@ -370,16 +406,47 @@ const html = `<!DOCTYPE html>
     });
   }
 
-  /* ---- 事件 ---- */
+  /* ---- 表格標題點擊排序事件 ---- */
+  if (thDate) {
+    thDate.addEventListener('click', function() {
+      sortS.value = '';
+      sortDate.value = sortDate.value === 'desc' ? 'asc' : 'desc';
+      updateSortIndicators();
+      render();
+    });
+  }
+  if (thPrice) {
+    thPrice.addEventListener('click', function() {
+      if (sortS.value === 'asc') sortS.value = 'desc';
+      else sortS.value = 'asc';
+      updateSortIndicators();
+      render();
+    });
+  }
+
+  /* ---- 事件監聽 ---- */
   depF.addEventListener('change', render);
   destF.addEventListener('change', render);
   daysF.addEventListener('change', render);
   airF.addEventListener('change', render);
   platF.addEventListener('change', render);
-  sortS.addEventListener('change', render);
-  document.getElementById('clear-filters').addEventListener('click', function(){
-    depF.value=''; destF.value=''; daysF.value=''; airF.value=''; platF.value=''; sortS.value=''; render();
+  sortDate.addEventListener('change', function() {
+    sortS.value = '';
+    updateSortIndicators();
+    render();
   });
+  sortS.addEventListener('change', function() {
+    updateSortIndicators();
+    render();
+  });
+  document.getElementById('clear-filters').addEventListener('click', function(){
+    depF.value=''; destF.value=''; daysF.value=''; airF.value=''; platF.value='';
+    sortDate.value='desc'; sortS.value='';
+    updateSortIndicators();
+    render();
+  });
+
+  updateSortIndicators();
 
   render();
 })();

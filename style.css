@@ -263,6 +263,25 @@ thead th {
   white-space: nowrap;
 }
 
+thead th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s, background 0.2s;
+}
+
+thead th.sortable:hover {
+  color: var(--accent-cyan);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sort-indicator {
+  display: inline-block;
+  font-size: 0.72rem;
+  margin-left: 4px;
+  color: var(--accent-cyan);
+  vertical-align: middle;
+}
+
 tbody tr {
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
   transition: background 0.2s;
