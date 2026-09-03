@@ -44,51 +44,59 @@ function parseCsv(content) {
   return rows;
 }
 
-// ========== 截圖檔名標準化 (單張: deal_screenshot.png, 多張: deal_screenshot1.png, deal_screenshot2.png...) ==========
+// ========== 截圖檔名正規化：單張改為 deal_screenshot.png，多張依序 deal_screenshot.png / deal_screenshot_2.png ... ==========
 
 const IMG_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
 
-function normalizeScreenshotFilenames() {
-  const screenshotRoot = path.join(__dirname, 'screenshot');
-  if (!fs.existsSync(screenshotRoot)) return;
+function normalizeScreenshots(baseDir) {
+  if (!fs.existsSync(baseDir)) return;
+  const entries = fs.readdirSync(baseDir, { withFileTypes: true });
 
-  const folders = fs.readdirSync(screenshotRoot).filter(f => {
-    const p = path.join(screenshotRoot, f);
-    return fs.statSync(p).isDirectory();
-  });
+  for (const entry of entries) {
+    if (!entry.isDirectory()) continue;
+    const dirPath = path.join(baseDir, entry.name);
+    const files = fs.readdirSync(dirPath)
+      .filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
+      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
 
-  folders.forEach(folder => {
-    const dir = path.join(screenshotRoot, folder);
-    const files = fs.readdirSync(dir).filter(f => {
-      return IMG_EXTS.includes(path.extname(f).toLowerCase());
-    });
-
-    if (files.length === 0) return;
+    if (files.length === 0) continue;
 
     if (files.length === 1) {
-      const ext = path.extname(files[0]).toLowerCase();
+      const ext = path.extname(files[0]).toLowerCase() || '.png';
       const targetName = 'deal_screenshot' + ext;
       if (files[0] !== targetName) {
-        fs.renameSync(path.join(dir, files[0]), path.join(dir, targetName));
-        console.log(`  🔄 截圖檔名標準化 [${folder}]: ${files[0]} -> ${targetName}`);
+        fs.renameSync(path.join(dirPath, files[0]), path.join(dirPath, targetName));
+        console.log(`  🔄 重新命名: ${entry.name}/${files[0]} -> ${targetName}`);
       }
     } else {
-      // 多張圖片：依自然排序後重新命名為 deal_screenshot1.png, deal_screenshot2.png...
-      files.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
-      const tempItems = [];
-      files.forEach((f, idx) => {
-        const ext = path.extname(f).toLowerCase();
-        const tempName = `__temp_${Date.now()}_${idx}${ext}`;
-        const targetName = `deal_screenshot${idx + 1}${ext}`;
-        fs.renameSync(path.join(dir, f), path.join(dir, tempName));
-        tempItems.push({ tempName, targetName });
-      });
-      tempItems.forEach(item => {
-        fs.renameSync(path.join(dir, item.tempName), path.join(dir, item.targetName));
-      });
-      console.log(`  🔄 截圖檔名標準化 [${folder}]: 共 ${files.length} 張已編號為 deal_screenshot1 ~ ${tempItems.length}`);
+      // 檢查是否已經完全符合規範
+      let alreadyNormalized = true;
+      for (let i = 0; i < files.length; i++) {
+        const ext = path.extname(files[i]).toLowerCase();
+        const expected = (i === 0) ? `deal_screenshot${ext}` : `deal_screenshot_${i + 1}${ext}`;
+        if (files[i] !== expected) {
+          alreadyNormalized = false;
+          break;
+        }
+      }
+      if (!alreadyNormalized) {
+        // 先轉為臨時檔名防碰撞
+        const tempFiles = [];
+        for (let i = 0; i < files.length; i++) {
+          const ext = path.extname(files[i]).toLowerCase() || '.png';
+          const tempName = `__temp_${Date.now()}_${i}${ext}`;
+          fs.renameSync(path.join(dirPath, files[i]), path.join(dirPath, tempName));
+          tempFiles.push({ tempName, ext });
+        }
+        for (let i = 0; i < tempFiles.length; i++) {
+          const ext = tempFiles[i].ext;
+          const targetName = (i === 0) ? `deal_screenshot${ext}` : `deal_screenshot_${i + 1}${ext}`;
+          fs.renameSync(path.join(dirPath, tempFiles[i].tempName), path.join(dirPath, targetName));
+          console.log(`  🔄 重新命名: ${entry.name} -> ${targetName}`);
+        }
+      }
     }
-  });
+  }
 }
 
 // ========== 截圖解析：URL 直接用，資料夾名稱則掃描所有圖片 ==========
@@ -146,15 +154,13 @@ function esc(s) {
 
 // ========== 主流程 ==========
 
-// 先標準化所有 screenshot 資料夾中的檔案名稱
-normalizeScreenshotFilenames();
-
 const csvPath = path.join(__dirname, 'data', 'deals.csv');
 if (!fs.existsSync(csvPath)) { console.error('❌ 找不到 data/deals.csv'); process.exit(1); }
 
 const allDeals = parseCsv(fs.readFileSync(csvPath, 'utf-8'));
 const deals = filterRecent(allDeals, 3);
-deals.sort((a, b) => new Date(b['日期']) - new Date(a['日期']));
+// 自動正規化截圖資料夾內的檔名（單張 deal_screenshot.png，多張 deal_screenshot.png, deal_screenshot_2.png...）
+normalizeScreenshots(path.join(__dirname, 'screenshot'));
 
 // 解析每筆 Deal 的截圖
 deals.forEach(d => { d._imgs = resolveScreenshots(d['截圖連結']); });
