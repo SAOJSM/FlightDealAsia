@@ -21,8 +21,8 @@
     <h1>✈️ 便宜機票 Deals</h1>
     <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
     <div class="header-stats">
-      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">1</span><span>筆 Deal</span></div>
-      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/09/04 上午03:41</span></div>
+      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">2</span><span>筆 Deal</span></div>
+      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/09/04 上午03:47</span></div>
     </div>
   </header>
 
@@ -44,6 +44,10 @@
       <div class="filter-group">
         <label for="filter-airline">航空公司</label>
         <select id="filter-airline"><option value="">全部</option></select>
+      </div>
+      <div class="filter-group">
+        <label for="filter-platform">購買平台</label>
+        <select id="filter-platform"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
         <label for="sort-price">價格排序</label>
@@ -68,6 +72,7 @@
             <th>到達地</th>
             <th>價格</th>
             <th>航空公司</th>
+            <th>購買平台</th>
             <th>DEAL 截圖</th>
           </tr>
         </thead>
@@ -87,12 +92,13 @@
 
 <script>
 (function() {
-  var DEALS = [{"日期":"2026-11-08","天數":"10","出發地":"HKG 香港","到達地":"ARN 斯德哥爾摩","價格":"17231","航空公司":"中國國際航空","截圖連結":"2026-11-18國航","_imgs":["screenshot/2026-11-18%E5%9C%8B%E8%88%AA/deal_screenshot.png"]}];
+  var DEALS = [{"日期":"2026-11-23","天數":"11","出發地":"TPE 台北","到達地":"MAD 馬德里","價格":"19785","航空公司":"中國南方航空","購買平台":"易遊網","截圖連結":"2026-11-23南航","_imgs":["screenshot/2026-11-23%E5%8D%97%E8%88%AA/deal_screenshot.png"]},{"日期":"2026-11-08","天數":"10","出發地":"HKG 香港","到達地":"ARN 斯德哥爾摩","價格":"17231","航空公司":"中國國際航空","購買平台":"mytrip","截圖連結":"2026-11-18國航","_imgs":["screenshot/2026-11-18%E5%9C%8B%E8%88%AA/deal_screenshot.png"]}];
 
   var depF  = document.getElementById('filter-departure');
   var destF = document.getElementById('filter-destination');
   var daysF = document.getElementById('filter-days');
   var airF  = document.getElementById('filter-airline');
+  var platF = document.getElementById('filter-platform');
   var sortS = document.getElementById('sort-price');
   var tbody = document.getElementById('deals-body');
   var cntEl = document.getElementById('deal-count');
@@ -133,6 +139,7 @@
   fill(destF, uniq('到達地'));
   fill(daysF, uniq('天數'), ' 天');
   fill(airF, uniq('航空公司'));
+  fill(platF, uniq('購買平台'));
 
   /* ---- 篩選 + 渲染 ---- */
   function render() {
@@ -141,6 +148,7 @@
       if (destF.value && d['到達地']  !== destF.value) return false;
       if (daysF.value && d['天數']    !== daysF.value) return false;
       if (airF.value  && d['航空公司'] !== airF.value)  return false;
+      if (platF.value && d['購買平台'] !== platF.value) return false;
       return true;
     });
     if (sortS.value==='asc')  list.sort(function(a,b){return numPrice(a['價格']) - numPrice(b['價格']);});
@@ -148,7 +156,7 @@
     cntEl.textContent = list.length;
 
     if (list.length===0) {
-      tbody.innerHTML='<tr><td colspan="7" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
+      tbody.innerHTML='<tr><td colspan="8" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
       return;
     }
 
@@ -158,6 +166,7 @@
       var imgsAttr = ea(JSON.stringify(imgs));
       var cntTxt = imgs.length>1 ? ' ('+imgs.length+')' : '';
       var daysTxt = d['天數'] ? e(d['天數']) + ' 天' : '—';
+      var platTxt = d['購買平台'] ? e(d['購買平台']) : '—';
       h+='<tr style="animation-delay:'+(i*0.05)+'s">'
         +'<td>'+e(d['日期'])+'</td>'
         +'<td><span class="badge days">'+daysTxt+'</span></td>'
@@ -165,6 +174,7 @@
         +'<td><span class="badge destination">'+e(d['到達地'])+'</span></td>'
         +'<td class="price">'+fmtP(d['價格'])+'</td>'
         +'<td><span class="badge airline">'+e(d['航空公司'])+'</span></td>'
+        +'<td><span class="badge platform">'+platTxt+'</span></td>'
         +'<td class="screenshot-cell" data-imgs="'+imgsAttr+'">'
         +(imgs.length>0
           ? '<span class="screenshot-icon">🖼️ 預覽'+cntTxt+'</span>'
@@ -213,9 +223,10 @@
   destF.addEventListener('change', render);
   daysF.addEventListener('change', render);
   airF.addEventListener('change', render);
+  platF.addEventListener('change', render);
   sortS.addEventListener('change', render);
   document.getElementById('clear-filters').addEventListener('click', function(){
-    depF.value=''; destF.value=''; daysF.value=''; airF.value=''; sortS.value=''; render();
+    depF.value=''; destF.value=''; daysF.value=''; airF.value=''; platF.value=''; sortS.value=''; render();
   });
 
   render();

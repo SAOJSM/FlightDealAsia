@@ -324,6 +324,12 @@ tbody td {
   border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
+.badge.platform {
+  background: rgba(14, 165, 233, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
 /* ===== Price ===== */
 .price {
   font-weight: 700;

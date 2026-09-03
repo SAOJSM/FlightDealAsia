@@ -168,6 +168,10 @@ const html = `<!DOCTYPE html>
         <select id="filter-airline"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
+        <label for="filter-platform">購買平台</label>
+        <select id="filter-platform"><option value="">全部</option></select>
+      </div>
+      <div class="filter-group">
         <label for="sort-price">價格排序</label>
         <select id="sort-price">
           <option value="">預設（最新）</option>
@@ -190,6 +194,7 @@ const html = `<!DOCTYPE html>
             <th>到達地</th>
             <th>價格</th>
             <th>航空公司</th>
+            <th>購買平台</th>
             <th>DEAL 截圖</th>
           </tr>
         </thead>
@@ -215,6 +220,7 @@ const html = `<!DOCTYPE html>
   var destF = document.getElementById('filter-destination');
   var daysF = document.getElementById('filter-days');
   var airF  = document.getElementById('filter-airline');
+  var platF = document.getElementById('filter-platform');
   var sortS = document.getElementById('sort-price');
   var tbody = document.getElementById('deals-body');
   var cntEl = document.getElementById('deal-count');
@@ -255,6 +261,7 @@ const html = `<!DOCTYPE html>
   fill(destF, uniq('到達地'));
   fill(daysF, uniq('天數'), ' 天');
   fill(airF, uniq('航空公司'));
+  fill(platF, uniq('購買平台'));
 
   /* ---- 篩選 + 渲染 ---- */
   function render() {
@@ -263,6 +270,7 @@ const html = `<!DOCTYPE html>
       if (destF.value && d['到達地']  !== destF.value) return false;
       if (daysF.value && d['天數']    !== daysF.value) return false;
       if (airF.value  && d['航空公司'] !== airF.value)  return false;
+      if (platF.value && d['購買平台'] !== platF.value) return false;
       return true;
     });
     if (sortS.value==='asc')  list.sort(function(a,b){return numPrice(a['價格']) - numPrice(b['價格']);});
@@ -270,7 +278,7 @@ const html = `<!DOCTYPE html>
     cntEl.textContent = list.length;
 
     if (list.length===0) {
-      tbody.innerHTML='<tr><td colspan="7" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
+      tbody.innerHTML='<tr><td colspan="8" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
       return;
     }
 
@@ -280,6 +288,7 @@ const html = `<!DOCTYPE html>
       var imgsAttr = ea(JSON.stringify(imgs));
       var cntTxt = imgs.length>1 ? ' ('+imgs.length+')' : '';
       var daysTxt = d['天數'] ? e(d['天數']) + ' 天' : '—';
+      var platTxt = d['購買平台'] ? e(d['購買平台']) : '—';
       h+='<tr style="animation-delay:'+(i*0.05)+'s">'
         +'<td>'+e(d['日期'])+'</td>'
         +'<td><span class="badge days">'+daysTxt+'</span></td>'
@@ -287,6 +296,7 @@ const html = `<!DOCTYPE html>
         +'<td><span class="badge destination">'+e(d['到達地'])+'</span></td>'
         +'<td class="price">'+fmtP(d['價格'])+'</td>'
         +'<td><span class="badge airline">'+e(d['航空公司'])+'</span></td>'
+        +'<td><span class="badge platform">'+platTxt+'</span></td>'
         +'<td class="screenshot-cell" data-imgs="'+imgsAttr+'">'
         +(imgs.length>0
           ? '<span class="screenshot-icon">🖼️ 預覽'+cntTxt+'</span>'
@@ -335,9 +345,10 @@ const html = `<!DOCTYPE html>
   destF.addEventListener('change', render);
   daysF.addEventListener('change', render);
   airF.addEventListener('change', render);
+  platF.addEventListener('change', render);
   sortS.addEventListener('change', render);
   document.getElementById('clear-filters').addEventListener('click', function(){
-    depF.value=''; destF.value=''; daysF.value=''; airF.value=''; sortS.value=''; render();
+    depF.value=''; destF.value=''; daysF.value=''; airF.value=''; platF.value=''; sortS.value=''; render();
   });
 
   render();
