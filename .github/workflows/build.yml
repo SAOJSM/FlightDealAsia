@@ -6,13 +6,13 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
 
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build-deploy:
@@ -22,7 +22,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
-      - name: Checkout
+      - name: Checkout latest code
         uses: actions/checkout@v4
 
       - name: Setup Node.js
@@ -30,15 +30,8 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Build index.html
+      - name: Build fresh index.html from deals.csv
         run: node build.js
-
-      - name: Commit built files
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add index.html
-          git diff --cached --quiet || (git commit -m "chore: rebuild index.html" && git push)
 
       - name: Configure Pages
         uses: actions/configure-pages@v4
