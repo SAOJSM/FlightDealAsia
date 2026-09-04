@@ -80,7 +80,8 @@ body {
 .container {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  max-width: 1600px;
+  width: 96%;
   margin: 0 auto;
   padding: 0 24px;
 }
@@ -190,7 +191,7 @@ body {
   flex-direction: column;
   gap: 6px;
   flex: 1;
-  min-width: 160px;
+  min-width: 140px;
 }
 
 .filter-group label {
@@ -235,7 +236,11 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  padding: 10px 20px;
+  padding: 0 20px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 0.85rem;
   font-family: inherit;
   cursor: pointer;
@@ -273,6 +278,7 @@ body {
 table {
   width: 100%;
   border-collapse: collapse;
+  white-space: nowrap;
 }
 
 thead {
@@ -280,8 +286,8 @@ thead {
 }
 
 thead th {
-  padding: 16px 20px;
-  font-size: 0.8rem;
+  padding: 14px 18px;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -326,9 +332,10 @@ tbody tr:last-child {
 }
 
 tbody td {
-  padding: 14px 20px;
+  padding: 13px 18px;
   font-size: 0.92rem;
   vertical-align: middle;
+  white-space: nowrap;
 }
 
 @keyframes fadeInRow {
@@ -343,6 +350,7 @@ tbody td {
   border-radius: 20px;
   font-size: 0.82rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .badge.days {
@@ -390,6 +398,7 @@ tbody td {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   color: var(--text-primary);
+  white-space: nowrap;
 }
 
 /* ===== Price ===== */
@@ -398,12 +407,14 @@ tbody td {
   font-size: 1.05rem !important;
   color: var(--accent-cyan);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* ===== Screenshot Cell ===== */
 .screenshot-cell {
   cursor: pointer;
   position: relative;
+  white-space: nowrap;
 }
 
 .screenshot-icon {
@@ -418,6 +429,7 @@ tbody td {
   font-size: 0.82rem;
   font-weight: 500;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .screenshot-cell:hover .screenshot-icon {

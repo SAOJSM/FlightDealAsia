@@ -48,6 +48,16 @@ function parseCsv(content) {
 
 const IMG_EXTS = ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.bmp', '.svg'];
 
+function sortScreenshotFiles(files) {
+  return files.slice().sort((a, b) => {
+    const baseA = path.basename(a, path.extname(a));
+    const baseB = path.basename(b, path.extname(b));
+    if (baseA === 'deal_screenshot' && baseB.startsWith('deal_screenshot_')) return -1;
+    if (baseB === 'deal_screenshot' && baseA.startsWith('deal_screenshot_')) return 1;
+    return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+  });
+}
+
 function normalizeScreenshots(baseDir) {
   if (!fs.existsSync(baseDir)) return;
   const entries = fs.readdirSync(baseDir, { withFileTypes: true });
@@ -55,9 +65,9 @@ function normalizeScreenshots(baseDir) {
   for (const entry of entries) {
     if (!entry.isDirectory()) continue;
     const dirPath = path.join(baseDir, entry.name);
-    const files = fs.readdirSync(dirPath)
-      .filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
-      .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+    const files = sortScreenshotFiles(
+      fs.readdirSync(dirPath).filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
+    );
 
     if (files.length === 0) continue;
 
@@ -112,9 +122,9 @@ function resolveScreenshots(value) {
   if (fs.existsSync(targetPath)) {
     const stat = fs.statSync(targetPath);
     if (stat.isDirectory()) {
-      const imgs = fs.readdirSync(targetPath)
-        .filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
-        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
+      const imgs = sortScreenshotFiles(
+        fs.readdirSync(targetPath).filter(f => IMG_EXTS.includes(path.extname(f).toLowerCase()))
+      );
       if (imgs.length > 0) {
         return imgs.map(f => 'screenshot/' + encodeURIComponent(value) + '/' + encodeURIComponent(f));
       }
