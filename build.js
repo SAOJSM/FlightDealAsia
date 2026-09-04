@@ -296,7 +296,7 @@ const html = `<!DOCTYPE html>
 </head>
 <body>
 
-<div class="bg-orbs"><div class="orb"></div><div class="orb"></div><div class="orb"></div></div>
+<div class="bg-image"></div>
 
 <div class="container">
   <header class="site-header">
