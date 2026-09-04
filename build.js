@@ -316,7 +316,7 @@ const html = `<!DOCTYPE html>
         <select id="filter-departure"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
-        <label for="filter-destination">到達地</label>
+        <label for="filter-destination">目的地</label>
         <select id="filter-destination"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
@@ -363,12 +363,12 @@ const html = `<!DOCTYPE html>
       <table>
         <thead>
           <tr>
-            <th class="sortable" id="th-update-date" title="點擊切換更新日期升/降冪">更新日期 <span class="sort-indicator" id="ind-update-date">▼</span></th>
-            <th class="sortable" id="th-date" title="點擊切換出發日期升/降冪">出發日期 <span class="sort-indicator" id="ind-date"></span></th>
+            <th class="sortable" id="th-update-date" title="點選切換更新日期排序">更新日期 <span class="sort-indicator" id="ind-update-date">▼</span></th>
+            <th class="sortable" id="th-date" title="點選切換出發日期排序">出發日期 <span class="sort-indicator" id="ind-date"></span></th>
             <th>天數</th>
             <th>出發地</th>
-            <th>到達地</th>
-            <th class="sortable" id="th-price" title="點擊切換價格升/降冪">價格 <span class="sort-indicator" id="ind-price"></span></th>
+            <th>目的地</th>
+            <th class="sortable" id="th-price" title="點選切換價格排序">價格 <span class="sort-indicator" id="ind-price"></span></th>
             <th>航空公司</th>
             <th>購買平台</th>
             <th>DEAL 截圖</th>
@@ -382,10 +382,10 @@ const html = `<!DOCTYPE html>
   <footer class="site-footer">便宜機票 Deals &mdash; 資料都是作者手動更新 &middot; 僅顯示最近 3 天，請耐心等待</footer>
 </div>
 
-<!-- 截圖浮動預覽（大圖預覽 + 捲動 + 點擊開新視窗） -->
+<!-- 截圖浮動預覽（大圖預覽 + 橫向捲動 + 點選開新分頁） -->
 <div class="screenshot-tooltip" id="screenshot-tooltip">
   <div class="tooltip-header">
-    <span class="tooltip-hint">🔍 點擊圖片在新視窗查看高清大圖</span>
+    <span class="tooltip-hint">🔍 點選圖片在新分頁查看高畫質大圖</span>
     <button type="button" class="tooltip-close" id="tooltip-close" title="關閉預覽">✕</button>
   </div>
   <div class="tooltip-gallery" id="tooltip-gallery"></div>
@@ -446,7 +446,10 @@ const html = `<!DOCTYPE html>
   /* ---- 填充下拉選單 ---- */
   function uniq(key) {
     var m={}, a=[];
-    DEALS.forEach(function(d){ if(d[key]&&!m[d[key]]){m[d[key]]=1;a.push(d[key]);} });
+    DEALS.forEach(function(d){
+      var val = key === '目的地' ? (d['目的地'] || d['到達地']) : d[key];
+      if(val&&!m[val]){m[val]=1;a.push(val);}
+    });
     return a.sort(function(x, y) {
       var nx = parseFloat(x), ny = parseFloat(y);
       if (!isNaN(nx) && !isNaN(ny)) return nx - ny;
@@ -463,7 +466,7 @@ const html = `<!DOCTYPE html>
     });
   }
   fill(depF, uniq('出發地'));
-  fill(destF, uniq('到達地'));
+  fill(destF, uniq('目的地'));
   fill(daysF, uniq('天數'), ' 天');
   fill(airF, uniq('航空公司'));
   fill(platF, uniq('購買平台'));
@@ -471,8 +474,9 @@ const html = `<!DOCTYPE html>
   /* ---- 篩選 + 渲染 ---- */
   function render() {
     var list = DEALS.filter(function(d) {
+      var destVal = d['目的地'] || d['到達地'] || '';
       if (depF.value  && d['出發地']  !== depF.value)  return false;
-      if (destF.value && d['到達地']  !== destF.value) return false;
+      if (destF.value && destVal     !== destF.value) return false;
       if (daysF.value && d['天數']    !== daysF.value) return false;
       if (airF.value  && d['航空公司'] !== airF.value)  return false;
       if (platF.value && d['購買平台'] !== platF.value) return false;
@@ -528,11 +532,11 @@ const html = `<!DOCTYPE html>
         +'<td class="date-departure">'+e(d['日期'])+'</td>'
         +'<td><span class="badge days">'+daysTxt+'</span></td>'
         +'<td><span class="badge departure">'+e(d['出發地'])+'</span></td>'
-        +'<td><span class="badge destination">'+e(d['到達地'])+'</span></td>'
+        +'<td><span class="badge destination">'+e(d['目的地'] || d['到達地'] || '')+'</span></td>'
         +'<td class="price">'+fmtP(d['價格'])+'</td>'
         +'<td><span class="badge airline">'+e(d['航空公司'])+'</span></td>'
         +'<td><span class="badge platform">'+platTxt+'</span></td>'
-        +'<td class="screenshot-cell" data-imgs="'+imgsAttr+'" title="點擊在新視窗開啟大圖">'
+        +'<td class="screenshot-cell" data-imgs="'+imgsAttr+'" title="點選在新分頁開啟大圖">'
         +(imgs.length>0
           ? '<span class="screenshot-icon">🖼️ 預覽'+cntTxt+'</span>'
           : '<span class="screenshot-none">—</span>')
@@ -548,7 +552,7 @@ const html = `<!DOCTYPE html>
     }
   }
 
-  /* ---- 點擊儲存格開啟新視窗 ---- */
+  /* ---- 點選儲存格開啟新分頁 ---- */
   function onCellClick(ev) {
     var imgs;
     try { imgs=JSON.parse(ev.currentTarget.getAttribute('data-imgs')); } catch(x){ imgs=[]; }
@@ -556,7 +560,7 @@ const html = `<!DOCTYPE html>
     window.open(imgs[0], '_blank', 'noopener,noreferrer');
   }
 
-  /* ---- 截圖浮動預覽（大圖 + 多張捲動 + 點擊外開） ---- */
+  /* ---- 截圖浮動預覽（大圖 + 橫向捲動 + 點選開新分頁） ---- */
   function showTip(ev) {
     clearTimeout(hideTimer);
     var imgs;
@@ -565,8 +569,8 @@ const html = `<!DOCTYPE html>
 
     var gh='';
     for(var i=0;i<imgs.length;i++) {
-      var badgeTxt = imgs.length > 1 ? '🔍 開啟圖 ' + (i+1) + ' 原圖' : '🔍 開啟高清原圖';
-      gh+='<a href="'+imgs[i]+'" target="_blank" rel="noopener" class="gallery-item" title="點擊在新視窗開啟高清原圖">'
+      var badgeTxt = imgs.length > 1 ? '🔍 開啟圖 ' + (i+1) + ' 原圖' : '🔍 開啟高畫質原圖';
+      gh+='<a href="'+imgs[i]+'" target="_blank" rel="noopener" class="gallery-item" title="點選在新分頁開啟高畫質原圖">'
         +'<img src="'+imgs[i]+'" alt="Deal 截圖" loading="lazy">'
         +'<span class="img-open-badge">'+badgeTxt+'</span>'
         +'</a>';
@@ -576,7 +580,7 @@ const html = `<!DOCTYPE html>
     if (imgs.length > 1) {
       tip.classList.remove('single-img');
       tip.classList.add('multi-img');
-      counter.textContent='共 '+imgs.length+' 張截圖（橫向並排顯示 · 點擊圖片開新視窗）';
+      counter.textContent='共 '+imgs.length+' 張截圖（橫向並排顯示 · 點選圖片開新分頁）';
       counter.style.display='';
     } else {
       tip.classList.remove('multi-img');
@@ -718,14 +722,14 @@ const html = `<!DOCTYPE html>
 fs.writeFileSync(path.join(__dirname, 'index.html'), html, 'utf-8');
 
 console.log('');
-console.log('  ✅ 構建完成！');
+console.log('  ✅ 建置完成！');
 console.log('  ─────────────────────────────');
 console.log('  📄 輸出: index.html');
 console.log('  📊 總筆數: ' + allDeals.length);
 console.log('  ✈️  顯示筆數: ' + deals.length + ' (最近 3 天)');
 deals.forEach(d => {
   const n = d._imgs.length;
-  console.log('     • ' + (d['更新日期'] || d['日期']) + ' (出發: ' + d['日期'] + ') [' + (d['天數'] || '?') + '天] ' + d['出發地'] + ' → ' + d['到達地'] + ' | 價格: ' + d['價格'] + ' | 截圖: ' + (n > 0 ? n + ' 張' : '無'));
+  console.log('     • ' + (d['更新日期'] || d['日期']) + ' (出發: ' + d['日期'] + ') [' + (d['天數'] || '?') + '天] ' + d['出發地'] + ' → ' + (d['目的地'] || d['到達地'] || '') + ' | 價格: ' + d['價格'] + ' | 截圖: ' + (n > 0 ? n + ' 張' : '無'));
 });
-console.log('  🕐 構建時間: ' + buildTime);
+console.log('  🕐 建置時間: ' + buildTime);
 console.log('');

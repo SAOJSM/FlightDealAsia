@@ -412,7 +412,7 @@ tbody td {
   transform: scale(1.05);
 }
 
-/* ===== Screenshot Tooltip（大圖預覽 + 捲動 + 點擊開新視窗）===== */
+/* ===== Screenshot Tooltip（大圖預覽 + 橫向捲動 + 點選開新分頁）===== */
 .screenshot-tooltip {
   position: fixed;
   z-index: 1000;
