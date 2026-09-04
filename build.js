@@ -266,7 +266,7 @@ const html = `<!DOCTYPE html>
     </div>
   </section>
 
-  <footer class="site-footer">便宜機票 Deals &mdash; 資料每次 commit 後自動更新 &middot; 僅顯示最近 3 天</footer>
+  <footer class="site-footer">便宜機票 Deals &mdash; 資料都是作者手動更新 &middot; 僅顯示最近 3 天，請耐心等待</footer>
 </div>
 
 <!-- 截圖浮動預覽（大圖預覽 + 捲動 + 點擊開新視窗） -->
