@@ -3,10 +3,13 @@ name: Build and Deploy
 on:
   push:
     branches: [main]
+  schedule:
+    # 每天半夜 0 點 (台灣時間 UTC+8 即 UTC 16:00) 自動執行更新與清理
+    - cron: '0 16 * * *'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -24,14 +27,26 @@ jobs:
     steps:
       - name: Checkout latest code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Build fresh index.html from deals.csv
+      - name: Build fresh index.html and prune expired deals (> 3 days)
         run: node build.js
+
+      - name: Commit and push changes if expired deals were pruned
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A data/ screenshot/ index.html
+          if ! git diff --staged --quiet; then
+            git commit -m "chore(auto): prune deals older than 3 days and update site"
+            git push origin main
+          fi
 
       - name: Configure Pages
         uses: actions/configure-pages@v4

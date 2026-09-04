@@ -377,6 +377,21 @@ tbody td {
   border: 1px solid rgba(14, 165, 233, 0.25);
 }
 
+.badge.update-date {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.date-departure {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
 /* ===== Price ===== */
 .price {
   font-weight: 700;

@@ -135,15 +135,108 @@ function resolveScreenshots(value) {
   return [];
 }
 
-// ========== 日期過濾：僅保留最近 N 天 ==========
+// ========== 日期與 CSV 序列化工具函式 ==========
 
-function filterRecent(deals, days) {
-  const today = new Date();
-  const cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (days - 1));
-  return deals.filter(d => {
-    const dt = new Date(d['日期']);
-    return !isNaN(dt.getTime()) && dt >= cutoff;
+function getMidnightDate(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+}
+
+function parseDealDate(str) {
+  if (!str) return null;
+  const m = String(str).trim().match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (m) {
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10), 0, 0, 0, 0);
+  }
+  const dt = new Date(str);
+  if (isNaN(dt.getTime())) return null;
+  return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate(), 0, 0, 0, 0);
+}
+
+function serializeCsv(rows, headers) {
+  const lines = [];
+  lines.push(headers.join(','));
+  for (const row of rows) {
+    const vals = headers.map(h => {
+      let v = String(row[h] !== undefined ? row[h] : '').trim();
+      if (v.includes(',') || v.includes('"') || v.includes('\n') || v.includes('\r')) {
+        v = '"' + v.replace(/"/g, '""') + '"';
+      }
+      return v;
+    });
+    lines.push(vals.join(','));
+  }
+  return lines.join('\r\n') + '\r\n';
+}
+
+// ========== 排除超出 3 天的過期 Deal，並清理 deals.csv 與 screenshot 資料夾 ==========
+
+function pruneExpiredDeals(deals, days = 3) {
+  const today = getMidnightDate(new Date());
+  const cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (days - 1), 0, 0, 0, 0);
+
+  const validDeals = [];
+  const expiredDeals = [];
+
+  deals.forEach(d => {
+    // 優先依照「更新日期」，若無則依「日期」
+    const dateStr = (d['更新日期'] || d['日期'] || '').trim();
+    const dt = parseDealDate(dateStr);
+    if (dt && dt < cutoff) {
+      expiredDeals.push(d);
+    } else {
+      validDeals.push(d);
+    }
   });
+
+  if (expiredDeals.length > 0) {
+    console.log(`\n  🧹 發現 ${expiredDeals.length} 筆超出 ${days} 天的過期 Deal，執行本地清理...`);
+
+    // 找出所有有效 Deal 仍在使用的截圖連結
+    const activeScreenshots = new Set(validDeals.map(d => (d['截圖連結'] || '').trim()).filter(Boolean));
+
+    // 實體刪除過期 Deal 的截圖目錄/檔案
+    expiredDeals.forEach(d => {
+      const target = (d['截圖連結'] || '').trim();
+      if (!target || activeScreenshots.has(target) || /^https?:\/\//i.test(target)) return;
+
+      const targetPath = path.join(__dirname, 'screenshot', target);
+      if (fs.existsSync(targetPath)) {
+        try {
+          const stat = fs.statSync(targetPath);
+          if (stat.isDirectory() && target !== '.' && target !== '..') {
+            fs.rmSync(targetPath, { recursive: true, force: true });
+            console.log(`    🗑️ 已刪除過期截圖資料夾: screenshot/${target}`);
+          } else if (stat.isFile() && target !== '.gitkeep') {
+            fs.unlinkSync(targetPath);
+            console.log(`    🗑️ 已刪除過期截圖檔案: screenshot/${target}`);
+          }
+        } catch (err) {
+          console.warn(`    ⚠️ 刪除 screenshot/${target} 失敗:`, err.message);
+        }
+      }
+
+      // 檢查帶有副檔名的檔案（例如 2026-11-18國航.png）
+      for (const ext of IMG_EXTS) {
+        const fileWithExt = path.join(__dirname, 'screenshot', target + ext);
+        if (fs.existsSync(fileWithExt)) {
+          try {
+            fs.unlinkSync(fileWithExt);
+            console.log(`    🗑️ 已刪除過期截圖檔案: screenshot/${target + ext}`);
+          } catch (err) {
+            console.warn(`    ⚠️ 刪除 ${fileWithExt} 失敗:`, err.message);
+          }
+        }
+      }
+    });
+
+    // 將未過期資料寫回 data/deals.csv
+    const headers = ['日期', '天數', '出發地', '到達地', '價格', '航空公司', '購買平台', '截圖連結', '更新日期'];
+    const newCsvContent = serializeCsv(validDeals, headers);
+    fs.writeFileSync(csvPath, newCsvContent, 'utf-8');
+    console.log(`    💾 已從 data/deals.csv 排除過期資料，剩餘 ${validDeals.length} 筆。\n`);
+  }
+
+  return validDeals;
 }
 
 // ========== HTML 轉義 ==========
@@ -158,7 +251,8 @@ const csvPath = path.join(__dirname, 'data', 'deals.csv');
 if (!fs.existsSync(csvPath)) { console.error('❌ 找不到 data/deals.csv'); process.exit(1); }
 
 const allDeals = parseCsv(fs.readFileSync(csvPath, 'utf-8'));
-const deals = filterRecent(allDeals, 3);
+// 執行清理：將超過 3 天的過期資料從 deals.csv 排除並實體刪除 screenshot 資料夾
+const deals = pruneExpiredDeals(allDeals, 3);
 // 自動正規化截圖資料夾內的檔名（單張 deal_screenshot.png，多張 deal_screenshot.png, deal_screenshot_2.png...）
 normalizeScreenshots(path.join(__dirname, 'screenshot'));
 
@@ -228,8 +322,16 @@ const html = `<!DOCTYPE html>
         <select id="filter-platform"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
-        <label for="sort-date">日期排序</label>
+        <label for="sort-update-date">更新日期排序</label>
+        <select id="sort-update-date">
+          <option value="desc">新 → 舊 (降冪)</option>
+          <option value="asc">舊 → 新 (升冪)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="sort-date">出發日期排序</label>
         <select id="sort-date">
+          <option value="">無</option>
           <option value="desc">新 → 舊 (降冪)</option>
           <option value="asc">舊 → 新 (升冪)</option>
         </select>
@@ -237,7 +339,7 @@ const html = `<!DOCTYPE html>
       <div class="filter-group">
         <label for="sort-price">價格排序</label>
         <select id="sort-price">
-          <option value="">預設 (依日期)</option>
+          <option value="">無</option>
           <option value="asc">低 → 高 (升冪)</option>
           <option value="desc">高 → 低 (降冪)</option>
         </select>
@@ -251,7 +353,8 @@ const html = `<!DOCTYPE html>
       <table>
         <thead>
           <tr>
-            <th class="sortable" id="th-date" title="點擊切換日期升/降冪">日期 <span class="sort-indicator" id="ind-date">▼</span></th>
+            <th class="sortable" id="th-update-date" title="點擊切換更新日期升/降冪">更新日期 <span class="sort-indicator" id="ind-update-date">▼</span></th>
+            <th class="sortable" id="th-date" title="點擊切換出發日期升/降冪">出發日期 <span class="sort-indicator" id="ind-date"></span></th>
             <th>天數</th>
             <th>出發地</th>
             <th>到達地</th>
@@ -283,24 +386,29 @@ const html = `<!DOCTYPE html>
 (function() {
   var DEALS = ${dealsJson};
 
-  var depF     = document.getElementById('filter-departure');
-  var destF    = document.getElementById('filter-destination');
-  var daysF    = document.getElementById('filter-days');
-  var airF     = document.getElementById('filter-airline');
-  var platF    = document.getElementById('filter-platform');
-  var sortDate = document.getElementById('sort-date');
-  var sortS    = document.getElementById('sort-price');
-  var thDate   = document.getElementById('th-date');
-  var thPrice  = document.getElementById('th-price');
-  var indDate  = document.getElementById('ind-date');
-  var indPrice = document.getElementById('ind-price');
-  var tbody    = document.getElementById('deals-body');
-  var cntEl    = document.getElementById('deal-count');
-  var tip      = document.getElementById('screenshot-tooltip');
-  var gallery  = document.getElementById('tooltip-gallery');
-  var counter  = document.getElementById('tooltip-counter');
-  var closeBtn = document.getElementById('tooltip-close');
+  var depF         = document.getElementById('filter-departure');
+  var destF        = document.getElementById('filter-destination');
+  var daysF        = document.getElementById('filter-days');
+  var airF         = document.getElementById('filter-airline');
+  var platF        = document.getElementById('filter-platform');
+  var sortUpDate   = document.getElementById('sort-update-date');
+  var sortDate     = document.getElementById('sort-date');
+  var sortPrice    = document.getElementById('sort-price');
+  var thUpDate     = document.getElementById('th-update-date');
+  var thDate       = document.getElementById('th-date');
+  var thPrice      = document.getElementById('th-price');
+  var indUpDate    = document.getElementById('ind-update-date');
+  var indDate      = document.getElementById('ind-date');
+  var indPrice     = document.getElementById('ind-price');
+  var tbody        = document.getElementById('deals-body');
+  var cntEl        = document.getElementById('deal-count');
+  var tip          = document.getElementById('screenshot-tooltip');
+  var gallery      = document.getElementById('tooltip-gallery');
+  var counter      = document.getElementById('tooltip-counter');
+  var closeBtn     = document.getElementById('tooltip-close');
   var hideTimer = null;
+
+  var activeSort = 'updateDate'; // 'updateDate' | 'date' | 'price'
 
   /* ---- 工具函式 ---- */
   function e(s) { var d=document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
@@ -312,15 +420,16 @@ const html = `<!DOCTYPE html>
   }
 
   function updateSortIndicators() {
-    if (sortS.value === 'asc') {
-      indPrice.textContent = '▲';
-      indDate.textContent = '';
-    } else if (sortS.value === 'desc') {
-      indPrice.textContent = '▼';
-      indDate.textContent = '';
-    } else {
-      indPrice.textContent = '';
+    indUpDate.textContent = '';
+    indDate.textContent = '';
+    indPrice.textContent = '';
+
+    if (activeSort === 'updateDate') {
+      indUpDate.textContent = sortUpDate.value === 'asc' ? '▲' : '▼';
+    } else if (activeSort === 'date') {
       indDate.textContent = sortDate.value === 'asc' ? '▲' : '▼';
+    } else if (activeSort === 'price') {
+      indPrice.textContent = sortPrice.value === 'asc' ? '▲' : '▼';
     }
   }
 
@@ -360,22 +469,39 @@ const html = `<!DOCTYPE html>
       return true;
     });
 
-    // 排序處理：若有選擇價格排序則價格優先，否則依日期升/降冪
-    if (sortS.value === 'asc') {
-      list.sort(function(a,b){ return numPrice(a['價格']) - numPrice(b['價格']); });
-    } else if (sortS.value === 'desc') {
-      list.sort(function(a,b){ return numPrice(b['價格']) - numPrice(a['價格']); });
-    } else {
-      if (sortDate.value === 'asc') {
-        list.sort(function(a,b){ return a['日期'].localeCompare(b['日期']); });
+    // 排序處理
+    if (activeSort === 'price') {
+      if (sortPrice.value === 'asc') {
+        list.sort(function(a,b){ return numPrice(a['價格']) - numPrice(b['價格']); });
       } else {
-        list.sort(function(a,b){ return b['日期'].localeCompare(a['日期']); });
+        list.sort(function(a,b){ return numPrice(b['價格']) - numPrice(a['價格']); });
+      }
+    } else if (activeSort === 'date') {
+      if (sortDate.value === 'asc') {
+        list.sort(function(a,b){ return (a['日期']||'').localeCompare(b['日期']||''); });
+      } else {
+        list.sort(function(a,b){ return (b['日期']||'').localeCompare(a['日期']||''); });
+      }
+    } else {
+      // 預設依 更新日期 排序
+      if (sortUpDate.value === 'asc') {
+        list.sort(function(a,b){
+          var da = a['更新日期'] || a['日期'] || '';
+          var db = b['更新日期'] || b['日期'] || '';
+          return da.localeCompare(db);
+        });
+      } else {
+        list.sort(function(a,b){
+          var da = a['更新日期'] || a['日期'] || '';
+          var db = b['更新日期'] || b['日期'] || '';
+          return db.localeCompare(da);
+        });
       }
     }
     cntEl.textContent = list.length;
 
     if (list.length===0) {
-      tbody.innerHTML='<tr><td colspan="8" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
+      tbody.innerHTML='<tr><td colspan="9" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
       return;
     }
 
@@ -386,8 +512,10 @@ const html = `<!DOCTYPE html>
       var cntTxt = imgs.length>1 ? ' ('+imgs.length+')' : '';
       var daysTxt = d['天數'] ? e(d['天數']) + ' 天' : '—';
       var platTxt = d['購買平台'] ? e(d['購買平台']) : '—';
+      var upDateTxt = d['更新日期'] ? e(d['更新日期']) : '—';
       h+='<tr style="animation-delay:'+(i*0.05)+'s">'
-        +'<td>'+e(d['日期'])+'</td>'
+        +'<td><span class="badge update-date">'+upDateTxt+'</span></td>'
+        +'<td class="date-departure">'+e(d['日期'])+'</td>'
         +'<td><span class="badge days">'+daysTxt+'</span></td>'
         +'<td><span class="badge departure">'+e(d['出發地'])+'</span></td>'
         +'<td><span class="badge destination">'+e(d['到達地'])+'</span></td>'
@@ -463,18 +591,29 @@ const html = `<!DOCTYPE html>
   }
 
   /* ---- 表格標題點擊排序事件 ---- */
+  if (thUpDate) {
+    thUpDate.addEventListener('click', function() {
+      activeSort = 'updateDate';
+      sortUpDate.value = sortUpDate.value === 'desc' ? 'asc' : 'desc';
+      sortDate.value = '';
+      sortPrice.value = '';
+      updateSortIndicators();
+      render();
+    });
+  }
   if (thDate) {
     thDate.addEventListener('click', function() {
-      sortS.value = '';
+      activeSort = 'date';
       sortDate.value = sortDate.value === 'desc' ? 'asc' : 'desc';
+      sortPrice.value = '';
       updateSortIndicators();
       render();
     });
   }
   if (thPrice) {
     thPrice.addEventListener('click', function() {
-      if (sortS.value === 'asc') sortS.value = 'desc';
-      else sortS.value = 'asc';
+      activeSort = 'price';
+      sortPrice.value = sortPrice.value === 'asc' ? 'desc' : 'asc';
       updateSortIndicators();
       render();
     });
@@ -486,18 +625,38 @@ const html = `<!DOCTYPE html>
   daysF.addEventListener('change', render);
   airF.addEventListener('change', render);
   platF.addEventListener('change', render);
+
+  sortUpDate.addEventListener('change', function() {
+    activeSort = 'updateDate';
+    sortDate.value = '';
+    sortPrice.value = '';
+    updateSortIndicators();
+    render();
+  });
   sortDate.addEventListener('change', function() {
-    sortS.value = '';
+    if (!sortDate.value) {
+      activeSort = 'updateDate';
+    } else {
+      activeSort = 'date';
+      sortPrice.value = '';
+    }
     updateSortIndicators();
     render();
   });
-  sortS.addEventListener('change', function() {
+  sortPrice.addEventListener('change', function() {
+    if (!sortPrice.value) {
+      activeSort = 'updateDate';
+    } else {
+      activeSort = 'price';
+    }
     updateSortIndicators();
     render();
   });
+
   document.getElementById('clear-filters').addEventListener('click', function(){
     depF.value=''; destF.value=''; daysF.value=''; airF.value=''; platF.value='';
-    sortDate.value='desc'; sortS.value='';
+    sortUpDate.value='desc'; sortDate.value=''; sortPrice.value='';
+    activeSort = 'updateDate';
     updateSortIndicators();
     render();
   });
@@ -520,7 +679,7 @@ console.log('  📊 總筆數: ' + allDeals.length);
 console.log('  ✈️  顯示筆數: ' + deals.length + ' (最近 3 天)');
 deals.forEach(d => {
   const n = d._imgs.length;
-  console.log('     • ' + d['日期'] + ' [' + (d['天數'] || '?') + '天] ' + d['出發地'] + ' → ' + d['到達地'] + ' | 價格: ' + d['價格'] + ' | 截圖: ' + (n > 0 ? n + ' 張' : '無'));
+  console.log('     • ' + (d['更新日期'] || d['日期']) + ' (出發: ' + d['日期'] + ') [' + (d['天數'] || '?') + '天] ' + d['出發地'] + ' → ' + d['到達地'] + ' | 價格: ' + d['價格'] + ' | 截圖: ' + (n > 0 ? n + ' 張' : '無'));
 });
 console.log('  🕐 構建時間: ' + buildTime);
 console.log('');

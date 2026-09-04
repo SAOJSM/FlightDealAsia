@@ -10,7 +10,7 @@
   <title>✈️ 便宜機票 Deals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1788522811762">
+  <link rel="stylesheet" href="style.css?v=1788524198436">
 </head>
 <body>
 
@@ -21,8 +21,8 @@
     <h1><span class="header-icon">✈️</span><span class="header-title-text">便宜機票 Deals</span></h1>
     <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
     <div class="header-stats">
-      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">3</span><span>筆 Deal</span></div>
-      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/09/04 下午07:53</span></div>
+      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">9</span><span>筆 Deal</span></div>
+      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/09/04 下午08:16</span></div>
     </div>
   </header>
 
@@ -50,8 +50,16 @@
         <select id="filter-platform"><option value="">全部</option></select>
       </div>
       <div class="filter-group">
-        <label for="sort-date">日期排序</label>
+        <label for="sort-update-date">更新日期排序</label>
+        <select id="sort-update-date">
+          <option value="desc">新 → 舊 (降冪)</option>
+          <option value="asc">舊 → 新 (升冪)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="sort-date">出發日期排序</label>
         <select id="sort-date">
+          <option value="">無</option>
           <option value="desc">新 → 舊 (降冪)</option>
           <option value="asc">舊 → 新 (升冪)</option>
         </select>
@@ -59,7 +67,7 @@
       <div class="filter-group">
         <label for="sort-price">價格排序</label>
         <select id="sort-price">
-          <option value="">預設 (依日期)</option>
+          <option value="">無</option>
           <option value="asc">低 → 高 (升冪)</option>
           <option value="desc">高 → 低 (降冪)</option>
         </select>
@@ -73,7 +81,8 @@
       <table>
         <thead>
           <tr>
-            <th class="sortable" id="th-date" title="點擊切換日期升/降冪">日期 <span class="sort-indicator" id="ind-date">▼</span></th>
+            <th class="sortable" id="th-update-date" title="點擊切換更新日期升/降冪">更新日期 <span class="sort-indicator" id="ind-update-date">▼</span></th>
+            <th class="sortable" id="th-date" title="點擊切換出發日期升/降冪">出發日期 <span class="sort-indicator" id="ind-date"></span></th>
             <th>天數</th>
             <th>出發地</th>
             <th>到達地</th>
@@ -103,26 +112,31 @@
 
 <script>
 (function() {
-  var DEALS = [{"日期":"2026-11-08","天數":"10","出發地":"HKG 香港","到達地":"ARN 斯德哥爾摩","價格":"17231","航空公司":"中國國際航空","購買平台":"mytrip","截圖連結":"2026-11-18國航","_imgs":["screenshot/2026-11-18%E5%9C%8B%E8%88%AA/deal_screenshot.png"]},{"日期":"2026-11-23","天數":"11","出發地":"TPE 台北","到達地":"MAD 馬德里","價格":"19785","航空公司":"中國南方航空","購買平台":"易遊網","截圖連結":"2026-11-23南航","_imgs":["screenshot/2026-11-23%E5%8D%97%E8%88%AA/deal_screenshot.png"]},{"日期":"2026-11-10","天數":"12","出發地":"TPE 台北","到達地":"FRA 法蘭克福","價格":"16908","航空公司":"中國南方航空","購買平台":"Trip.com","截圖連結":"2026-11-10南航","_imgs":["screenshot/2026-11-10%E5%8D%97%E8%88%AA/deal_screenshot.png"]}];
+  var DEALS = [{"日期":"2026-11-18","天數":"10","出發地":"HKG 香港","到達地":"ARN 斯德哥爾摩","價格":"17231","航空公司":"中國國際航空","購買平台":"mytrip","截圖連結":"2026-11-18國航","更新日期":"2026-09-04","_imgs":["screenshot/2026-11-18%E5%9C%8B%E8%88%AA/deal_screenshot.png"]},{"日期":"2026-11-23","天數":"11","出發地":"TPE 台北","到達地":"MAD 馬德里","價格":"19785","航空公司":"中國南方航空","購買平台":"易遊網","截圖連結":"2026-11-23南航","更新日期":"2026-09-04","_imgs":["screenshot/2026-11-23%E5%8D%97%E8%88%AA/deal_screenshot.png"]},{"日期":"2026-11-10","天數":"12","出發地":"TPE 台北","到達地":"FRA 法蘭克福","價格":"16908","航空公司":"中國南方航空","購買平台":"Trip.com","截圖連結":"2026-11-10南航","更新日期":"2026-09-04","_imgs":["screenshot/2026-11-10%E5%8D%97%E8%88%AA/deal_screenshot.png"]},{"日期":"2026-10-22","天數":"10","出發地":"KUL 吉隆坡","到達地":"PRG 布拉格","價格":"19215","航空公司":"阿拉伯航空","購買平台":"官網","截圖連結":"2026-10-22阿拉伯航空","更新日期":"2026-09-04","_imgs":["screenshot/2026-10-22%E9%98%BF%E6%8B%89%E4%BC%AF%E8%88%AA%E7%A9%BA/deal_screenshot.jpg"]},{"日期":"2026-11-02","天數":"13","出發地":"MNL 馬尼拉","到達地":"ZRH 蘇黎世","價格":"17249","航空公司":"阿曼航空","購買平台":"官網","截圖連結":"2026-11-02阿曼航空","更新日期":"2026-09-04","_imgs":["screenshot/2026-11-02%E9%98%BF%E6%9B%BC%E8%88%AA%E7%A9%BA/deal_screenshot.jpg"]},{"日期":"2026-11-04","天數":"15","出發地":"MNL 馬尼拉","到達地":"MAD 馬德里","價格":"17761","航空公司":"中國南方航空","購買平台":"mytrip","截圖連結":"2026-11-04南航","更新日期":"2026-09-04","_imgs":["screenshot/2026-11-04%E5%8D%97%E8%88%AA/deal_screenshot.jpg"]},{"日期":"2026-11-05","天數":"11","出發地":"TPE 台北","到達地":"ALA 阿拉圖木","價格":"17006","航空公司":"中國國際航空","購買平台":"Trip.com","截圖連結":"2026-11-05國航","更新日期":"2026-09-04","_imgs":["screenshot/2026-11-05%E5%9C%8B%E8%88%AA/deal_screenshot.jpg"]},{"日期":"2026-11-17","天數":"14","出發地":"TPE 台北","到達地":"SEA 西雅圖","價格":"18189","航空公司":"聯合航空","購買平台":"官網","截圖連結":"2026-11-17聯合航空","更新日期":"2026-09-04","_imgs":["screenshot/2026-11-17%E8%81%AF%E5%90%88%E8%88%AA%E7%A9%BA/deal_screenshot_2.jpg","screenshot/2026-11-17%E8%81%AF%E5%90%88%E8%88%AA%E7%A9%BA/deal_screenshot.jpg"]},{"日期":"2026-12-27","天數":"11","出發地":"TPE 台北","到達地":"URC 烏魯木齊","價格":"14849","航空公司":"中國國際航空+上海航空","購買平台":"mytrip","截圖連結":"2026-12-27國航+上航","更新日期":"2026-09-04","_imgs":["screenshot/2026-12-27%E5%9C%8B%E8%88%AA%2B%E4%B8%8A%E8%88%AA/deal_screenshot.jpg"]}];
 
-  var depF     = document.getElementById('filter-departure');
-  var destF    = document.getElementById('filter-destination');
-  var daysF    = document.getElementById('filter-days');
-  var airF     = document.getElementById('filter-airline');
-  var platF    = document.getElementById('filter-platform');
-  var sortDate = document.getElementById('sort-date');
-  var sortS    = document.getElementById('sort-price');
-  var thDate   = document.getElementById('th-date');
-  var thPrice  = document.getElementById('th-price');
-  var indDate  = document.getElementById('ind-date');
-  var indPrice = document.getElementById('ind-price');
-  var tbody    = document.getElementById('deals-body');
-  var cntEl    = document.getElementById('deal-count');
-  var tip      = document.getElementById('screenshot-tooltip');
-  var gallery  = document.getElementById('tooltip-gallery');
-  var counter  = document.getElementById('tooltip-counter');
-  var closeBtn = document.getElementById('tooltip-close');
+  var depF         = document.getElementById('filter-departure');
+  var destF        = document.getElementById('filter-destination');
+  var daysF        = document.getElementById('filter-days');
+  var airF         = document.getElementById('filter-airline');
+  var platF        = document.getElementById('filter-platform');
+  var sortUpDate   = document.getElementById('sort-update-date');
+  var sortDate     = document.getElementById('sort-date');
+  var sortPrice    = document.getElementById('sort-price');
+  var thUpDate     = document.getElementById('th-update-date');
+  var thDate       = document.getElementById('th-date');
+  var thPrice      = document.getElementById('th-price');
+  var indUpDate    = document.getElementById('ind-update-date');
+  var indDate      = document.getElementById('ind-date');
+  var indPrice     = document.getElementById('ind-price');
+  var tbody        = document.getElementById('deals-body');
+  var cntEl        = document.getElementById('deal-count');
+  var tip          = document.getElementById('screenshot-tooltip');
+  var gallery      = document.getElementById('tooltip-gallery');
+  var counter      = document.getElementById('tooltip-counter');
+  var closeBtn     = document.getElementById('tooltip-close');
   var hideTimer = null;
+
+  var activeSort = 'updateDate'; // 'updateDate' | 'date' | 'price'
 
   /* ---- 工具函式 ---- */
   function e(s) { var d=document.createElement('div'); d.appendChild(document.createTextNode(s)); return d.innerHTML; }
@@ -134,15 +148,16 @@
   }
 
   function updateSortIndicators() {
-    if (sortS.value === 'asc') {
-      indPrice.textContent = '▲';
-      indDate.textContent = '';
-    } else if (sortS.value === 'desc') {
-      indPrice.textContent = '▼';
-      indDate.textContent = '';
-    } else {
-      indPrice.textContent = '';
+    indUpDate.textContent = '';
+    indDate.textContent = '';
+    indPrice.textContent = '';
+
+    if (activeSort === 'updateDate') {
+      indUpDate.textContent = sortUpDate.value === 'asc' ? '▲' : '▼';
+    } else if (activeSort === 'date') {
       indDate.textContent = sortDate.value === 'asc' ? '▲' : '▼';
+    } else if (activeSort === 'price') {
+      indPrice.textContent = sortPrice.value === 'asc' ? '▲' : '▼';
     }
   }
 
@@ -182,22 +197,39 @@
       return true;
     });
 
-    // 排序處理：若有選擇價格排序則價格優先，否則依日期升/降冪
-    if (sortS.value === 'asc') {
-      list.sort(function(a,b){ return numPrice(a['價格']) - numPrice(b['價格']); });
-    } else if (sortS.value === 'desc') {
-      list.sort(function(a,b){ return numPrice(b['價格']) - numPrice(a['價格']); });
-    } else {
-      if (sortDate.value === 'asc') {
-        list.sort(function(a,b){ return a['日期'].localeCompare(b['日期']); });
+    // 排序處理
+    if (activeSort === 'price') {
+      if (sortPrice.value === 'asc') {
+        list.sort(function(a,b){ return numPrice(a['價格']) - numPrice(b['價格']); });
       } else {
-        list.sort(function(a,b){ return b['日期'].localeCompare(a['日期']); });
+        list.sort(function(a,b){ return numPrice(b['價格']) - numPrice(a['價格']); });
+      }
+    } else if (activeSort === 'date') {
+      if (sortDate.value === 'asc') {
+        list.sort(function(a,b){ return (a['日期']||'').localeCompare(b['日期']||''); });
+      } else {
+        list.sort(function(a,b){ return (b['日期']||'').localeCompare(a['日期']||''); });
+      }
+    } else {
+      // 預設依 更新日期 排序
+      if (sortUpDate.value === 'asc') {
+        list.sort(function(a,b){
+          var da = a['更新日期'] || a['日期'] || '';
+          var db = b['更新日期'] || b['日期'] || '';
+          return da.localeCompare(db);
+        });
+      } else {
+        list.sort(function(a,b){
+          var da = a['更新日期'] || a['日期'] || '';
+          var db = b['更新日期'] || b['日期'] || '';
+          return db.localeCompare(da);
+        });
       }
     }
     cntEl.textContent = list.length;
 
     if (list.length===0) {
-      tbody.innerHTML='<tr><td colspan="8" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
+      tbody.innerHTML='<tr><td colspan="9" class="no-data">目前沒有符合條件的機票 Deal ✈️</td></tr>';
       return;
     }
 
@@ -208,8 +240,10 @@
       var cntTxt = imgs.length>1 ? ' ('+imgs.length+')' : '';
       var daysTxt = d['天數'] ? e(d['天數']) + ' 天' : '—';
       var platTxt = d['購買平台'] ? e(d['購買平台']) : '—';
+      var upDateTxt = d['更新日期'] ? e(d['更新日期']) : '—';
       h+='<tr style="animation-delay:'+(i*0.05)+'s">'
-        +'<td>'+e(d['日期'])+'</td>'
+        +'<td><span class="badge update-date">'+upDateTxt+'</span></td>'
+        +'<td class="date-departure">'+e(d['日期'])+'</td>'
         +'<td><span class="badge days">'+daysTxt+'</span></td>'
         +'<td><span class="badge departure">'+e(d['出發地'])+'</span></td>'
         +'<td><span class="badge destination">'+e(d['到達地'])+'</span></td>'
@@ -285,18 +319,29 @@
   }
 
   /* ---- 表格標題點擊排序事件 ---- */
+  if (thUpDate) {
+    thUpDate.addEventListener('click', function() {
+      activeSort = 'updateDate';
+      sortUpDate.value = sortUpDate.value === 'desc' ? 'asc' : 'desc';
+      sortDate.value = '';
+      sortPrice.value = '';
+      updateSortIndicators();
+      render();
+    });
+  }
   if (thDate) {
     thDate.addEventListener('click', function() {
-      sortS.value = '';
+      activeSort = 'date';
       sortDate.value = sortDate.value === 'desc' ? 'asc' : 'desc';
+      sortPrice.value = '';
       updateSortIndicators();
       render();
     });
   }
   if (thPrice) {
     thPrice.addEventListener('click', function() {
-      if (sortS.value === 'asc') sortS.value = 'desc';
-      else sortS.value = 'asc';
+      activeSort = 'price';
+      sortPrice.value = sortPrice.value === 'asc' ? 'desc' : 'asc';
       updateSortIndicators();
       render();
     });
@@ -308,18 +353,38 @@
   daysF.addEventListener('change', render);
   airF.addEventListener('change', render);
   platF.addEventListener('change', render);
+
+  sortUpDate.addEventListener('change', function() {
+    activeSort = 'updateDate';
+    sortDate.value = '';
+    sortPrice.value = '';
+    updateSortIndicators();
+    render();
+  });
   sortDate.addEventListener('change', function() {
-    sortS.value = '';
+    if (!sortDate.value) {
+      activeSort = 'updateDate';
+    } else {
+      activeSort = 'date';
+      sortPrice.value = '';
+    }
     updateSortIndicators();
     render();
   });
-  sortS.addEventListener('change', function() {
+  sortPrice.addEventListener('change', function() {
+    if (!sortPrice.value) {
+      activeSort = 'updateDate';
+    } else {
+      activeSort = 'price';
+    }
     updateSortIndicators();
     render();
   });
+
   document.getElementById('clear-filters').addEventListener('click', function(){
     depF.value=''; destF.value=''; daysF.value=''; airF.value=''; platF.value='';
-    sortDate.value='desc'; sortS.value='';
+    sortUpDate.value='desc'; sortDate.value=''; sortPrice.value='';
+    activeSort = 'updateDate';
     updateSortIndicators();
     render();
   });
