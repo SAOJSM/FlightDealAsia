@@ -565,25 +565,53 @@ const html = `<!DOCTYPE html>
 
     var gh='';
     for(var i=0;i<imgs.length;i++) {
+      var badgeTxt = imgs.length > 1 ? '🔍 開啟圖 ' + (i+1) + ' 原圖' : '🔍 開啟高清原圖';
       gh+='<a href="'+imgs[i]+'" target="_blank" rel="noopener" class="gallery-item" title="點擊在新視窗開啟高清原圖">'
         +'<img src="'+imgs[i]+'" alt="Deal 截圖" loading="lazy">'
-        +'<span class="img-open-badge">🔍 開啟原圖</span>'
+        +'<span class="img-open-badge">'+badgeTxt+'</span>'
         +'</a>';
     }
     gallery.innerHTML=gh;
-    counter.textContent='共 '+imgs.length+' 張截圖 (點擊圖片開新視窗)';
-    counter.style.display=imgs.length>1?'':'none';
 
-    // 定位計算
+    if (imgs.length > 1) {
+      tip.classList.remove('single-img');
+      tip.classList.add('multi-img');
+      counter.textContent='共 '+imgs.length+' 張截圖（橫向並排顯示 · 點擊圖片開新視窗）';
+      counter.style.display='';
+    } else {
+      tip.classList.remove('multi-img');
+      tip.classList.add('single-img');
+      counter.textContent='';
+      counter.style.display='none';
+    }
+
+    // 定位與寬度計算
     if (window.innerWidth > 768) {
-      var rect=ev.currentTarget.getBoundingClientRect();
-      var tw=Math.min(560, window.innerWidth - 30);
-      var x=rect.left - tw - 16;
-      var y=rect.top - 20;
-      if(x < 12) x = rect.right + 16;
-      if(y + 540 > window.innerHeight) y = Math.max(12, window.innerHeight - 550);
-      if(y < 12) y = 12;
-      tip.style.left=x+'px'; tip.style.top=y+'px';
+      var tw;
+      if (imgs.length === 1) {
+        tw = Math.min(540, window.innerWidth - 30);
+      } else if (imgs.length === 2) {
+        tw = Math.min(940, window.innerWidth - 30);
+      } else {
+        tw = Math.min(imgs.length * 440 + 40, window.innerWidth - 30, 1380);
+      }
+      tip.style.width = tw + 'px';
+
+      var rect = ev.currentTarget.getBoundingClientRect();
+      var x = rect.left - tw - 16;
+      if (x < 12) {
+        if (rect.right + 16 + tw <= window.innerWidth - 12) {
+          x = rect.right + 16;
+        } else {
+          x = Math.max(12, Math.floor((window.innerWidth - tw) / 2));
+        }
+      }
+
+      var y = rect.top - 20;
+      if (y + 540 > window.innerHeight) y = Math.max(12, window.innerHeight - 550);
+      if (y < 12) y = 12;
+      tip.style.left = x + 'px';
+      tip.style.top = y + 'px';
     }
     tip.classList.add('visible');
   }
@@ -593,6 +621,14 @@ const html = `<!DOCTYPE html>
 
   tip.addEventListener('mouseenter', function(){ clearTimeout(hideTimer); });
   tip.addEventListener('mouseleave', hideTip);
+  gallery.addEventListener('wheel', function(e) {
+    if (gallery.scrollWidth > gallery.clientWidth) {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        gallery.scrollLeft += e.deltaY;
+      }
+    }
+  }, { passive: false });
   if (closeBtn) {
     closeBtn.addEventListener('click', function(e) {
       e.stopPropagation();
