@@ -12,15 +12,22 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Local archives & build outputs
-*.zip
-*.rar
-*.7z
+# Local configuration & credentials (CRITICAL: NEVER COMMIT)
+config.json
+*.env
+*.env.*
 
-# Local tooling & drafts
+# Local bot runners & internal docs
+bot.js
 *.bat
 *.cmd
 *.ps1
 DEV_PLAN.md
 INTERNAL_*.md
+
+# Local archives & temp
+*.zip
+*.rar
+*.7z
+temp_pending_photos/
 assets/bg_golden.jpg

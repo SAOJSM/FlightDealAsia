@@ -178,7 +178,20 @@ function serializeCsv(rows, headers) {
   return lines.join('\r\n') + '\r\n';
 }
 
-// ========== 排除超出 3 天的過期 Deal，並清理 deals.csv 與 screenshot 資料夾 ==========
+// ========== 記憶體日期過濾：僅過濾最近 N 天供網頁展示（不刪除 deals.csv 與 screenshot 資料夾）==========
+
+function filterRecent(deals, days = 3) {
+  const today = getMidnightDate(new Date());
+  const cutoff = new Date(today.getFullYear(), today.getMonth(), today.getDate() - (days - 1), 0, 0, 0, 0);
+
+  return deals.filter(d => {
+    const dateStr = (d['更新日期'] || d['日期'] || '').trim();
+    const dt = parseDealDate(dateStr);
+    return !dt || dt >= cutoff;
+  });
+}
+
+// ========== 排除超出 3 天的過期 Deal，並清理 deals.csv 與 screenshot 資料夾（僅在傳入 --prune 參數時使用）==========
 
 function pruneExpiredDeals(deals, days = 3) {
   const today = getMidnightDate(new Date());
@@ -261,8 +274,9 @@ const csvPath = path.join(__dirname, 'data', 'deals.csv');
 if (!fs.existsSync(csvPath)) { console.error('❌ 找不到 data/deals.csv'); process.exit(1); }
 
 const allDeals = parseCsv(fs.readFileSync(csvPath, 'utf-8'));
-// 執行清理：將超過 3 天的過期資料從 deals.csv 排除並實體刪除 screenshot 資料夾
-const deals = pruneExpiredDeals(allDeals, 3);
+// 預設僅在記憶體中過濾展示，不刪除 deals.csv 與 screenshot；僅當指定 --prune 時才執行硬刪除清理
+const shouldPrune = process.argv.includes('--prune') || process.env.PRUNE === 'true';
+const deals = shouldPrune ? pruneExpiredDeals(allDeals, 3) : filterRecent(allDeals, 3);
 // 自動正規化截圖資料夾內的檔名（單張 deal_screenshot.png，多張 deal_screenshot.png, deal_screenshot_2.png...）
 normalizeScreenshots(path.join(__dirname, 'screenshot'));
 
