@@ -10,7 +10,7 @@
   <title>✈️ 便宜機票 Deals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1790726313250">
+  <link rel="stylesheet" href="style.css?v=1790726332653">
 </head>
 <body>
 
@@ -21,7 +21,7 @@
     <h1><span class="header-icon">✈️</span><span class="header-title-text">便宜機票 Deals</span></h1>
     <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
     <div class="header-stats">
-      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">6</span><span>筆 Deal</span></div>
+      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">7</span><span>筆 Deal</span></div>
       <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/09/30 上午07:58</span></div>
     </div>
   </header>
@@ -112,7 +112,7 @@
 
 <script>
 (function() {
-  var DEALS = [{"日期":"2026-11-04","天數":"11","出發地":"DUB 都柏林","到達地":"TPE 台北","價格":"17,915","航空公司":"中國東方航空","購買平台":"Trip.com","截圖連結":"2026-11-04中國東方航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-11-04%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-12-04","天數":"21","出發地":"OSL 奧斯陸","到達地":"BKK 曼谷","價格":"17,830","航空公司":"北歐大西洋航空","購買平台":"官網或Mytrip","截圖連結":"2026-12-04北歐大西洋航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-12-04%E5%8C%97%E6%AD%90%E5%A4%A7%E8%A5%BF%E6%B4%8B%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-09","天數":"7","出發地":"HND 羽田","到達地":"CDG 巴黎","價格":"17,972","航空公司":"中國南方航空","購買平台":"Trip.com","截圖連結":"2026-11-09中國南方航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-11-09%E4%B8%AD%E5%9C%8B%E5%8D%97%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-20","天數":"7","出發地":"HND 羽田","到達地":"DOH 多哈","價格":"10,650","航空公司":"印度航空","購買平台":"mytrip","截圖連結":"2026-11-20印度航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-11-20%E5%8D%B0%E5%BA%A6%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2026-11-20%E5%8D%B0%E5%BA%A6%E8%88%AA%E7%A9%BA/deal_screenshot_2.png","screenshot/2026-11-20%E5%8D%B0%E5%BA%A6%E8%88%AA%E7%A9%BA/deal_screenshot_3.png"]},{"日期":"2027-03-02","天數":"13","出發地":"ICN 首爾","到達地":"ARN 斯德哥爾摩","價格":"16,660","航空公司":"中國國際航空","購買平台":"mytrip","截圖連結":"2027-03-02中國國際航空","更新日期":"2026-09-28","_imgs":["screenshot/2027-03-02%E4%B8%AD%E5%9C%8B%E5%9C%8B%E9%9A%9B%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2027-03-02%E4%B8%AD%E5%9C%8B%E5%9C%8B%E9%9A%9B%E8%88%AA%E7%A9%BA/deal_screenshot_2.png","screenshot/2027-03-02%E4%B8%AD%E5%9C%8B%E5%9C%8B%E9%9A%9B%E8%88%AA%E7%A9%BA/deal_screenshot_3.png"]},{"日期":"2026-11-01","天數":"單程","出發地":"HKT 普吉島","到達地":"OSL 奧斯陸","價格":"4,695","航空公司":"北歐大西洋航空","購買平台":"官網 or Trip.com","截圖連結":"2026-11-01北歐大西洋航空","更新日期":"2026-09-30","_imgs":["screenshot/2026-11-01%E5%8C%97%E6%AD%90%E5%A4%A7%E8%A5%BF%E6%B4%8B%E8%88%AA%E7%A9%BA/deal_screenshot.png"]}];
+  var DEALS = [{"日期":"2026-11-04","天數":"11","出發地":"DUB 都柏林","到達地":"TPE 台北","價格":"17,915","航空公司":"中國東方航空","購買平台":"Trip.com","截圖連結":"2026-11-04中國東方航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-11-04%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-12-04","天數":"21","出發地":"OSL 奧斯陸","到達地":"BKK 曼谷","價格":"17,830","航空公司":"北歐大西洋航空","購買平台":"官網或Mytrip","截圖連結":"2026-12-04北歐大西洋航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-12-04%E5%8C%97%E6%AD%90%E5%A4%A7%E8%A5%BF%E6%B4%8B%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-09","天數":"7","出發地":"HND 羽田","到達地":"CDG 巴黎","價格":"17,972","航空公司":"中國南方航空","購買平台":"Trip.com","截圖連結":"2026-11-09中國南方航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-11-09%E4%B8%AD%E5%9C%8B%E5%8D%97%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-20","天數":"7","出發地":"HND 羽田","到達地":"DOH 多哈","價格":"10,650","航空公司":"印度航空","購買平台":"mytrip","截圖連結":"2026-11-20印度航空","更新日期":"2026-09-28","_imgs":["screenshot/2026-11-20%E5%8D%B0%E5%BA%A6%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2026-11-20%E5%8D%B0%E5%BA%A6%E8%88%AA%E7%A9%BA/deal_screenshot_2.png","screenshot/2026-11-20%E5%8D%B0%E5%BA%A6%E8%88%AA%E7%A9%BA/deal_screenshot_3.png"]},{"日期":"2027-03-02","天數":"13","出發地":"ICN 首爾","到達地":"ARN 斯德哥爾摩","價格":"16,660","航空公司":"中國國際航空","購買平台":"mytrip","截圖連結":"2027-03-02中國國際航空","更新日期":"2026-09-28","_imgs":["screenshot/2027-03-02%E4%B8%AD%E5%9C%8B%E5%9C%8B%E9%9A%9B%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2027-03-02%E4%B8%AD%E5%9C%8B%E5%9C%8B%E9%9A%9B%E8%88%AA%E7%A9%BA/deal_screenshot_2.png","screenshot/2027-03-02%E4%B8%AD%E5%9C%8B%E5%9C%8B%E9%9A%9B%E8%88%AA%E7%A9%BA/deal_screenshot_3.png"]},{"日期":"2026-11-01","天數":"單程","出發地":"HKT 普吉島","到達地":"OSL 奧斯陸","價格":"4,695","航空公司":"北歐大西洋航空","購買平台":"官網 or Trip.com","截圖連結":"2026-11-01北歐大西洋航空","更新日期":"2026-09-30","_imgs":["screenshot/2026-11-01%E5%8C%97%E6%AD%90%E5%A4%A7%E8%A5%BF%E6%B4%8B%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-08","天數":"單程","出發地":"HKT 普吉島","到達地":"OSL 奧斯陸","價格":"4,695","航空公司":"北歐大西洋航空","購買平台":"官網 or Trip.com","截圖連結":"2026-11-08北歐大西洋航空","更新日期":"2026-09-30","_imgs":["screenshot/2026-11-08%E5%8C%97%E6%AD%90%E5%A4%A7%E8%A5%BF%E6%B4%8B%E8%88%AA%E7%A9%BA/deal_screenshot.png"]}];
 
   var depF         = document.getElementById('filter-departure');
   var destF        = document.getElementById('filter-destination');
