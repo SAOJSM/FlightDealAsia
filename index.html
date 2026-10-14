@@ -10,7 +10,7 @@
   <title>✈️ 便宜機票 Deals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1792005062343">
+  <link rel="stylesheet" href="style.css?v=1792005073773">
 </head>
 <body>
 
@@ -21,7 +21,7 @@
     <h1><span class="header-icon">✈️</span><span class="header-title-text">便宜機票 Deals</span></h1>
     <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
     <div class="header-stats">
-      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">4</span><span>筆 Deal</span></div>
+      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">5</span><span>筆 Deal</span></div>
       <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/10/15 上午03:11</span></div>
     </div>
   </header>
@@ -112,7 +112,7 @@
 
 <script>
 (function() {
-  var DEALS = [{"日期":"2027-01-19","天數":"9","出發地":"NRT 東京成田","到達地":"LAX 洛杉磯","價格":"16566","航空公司":"ZIPAIR","購買平台":"官網","截圖連結":"2027-01-19ZIPAIR","更新日期":"2026-10-14","_imgs":["screenshot/2027-01-19ZIPAIR/deal_screenshot.png","screenshot/2027-01-19ZIPAIR/deal_screenshot_2.png"]},{"日期":"2026-11-05","天數":"7","出發地":"KHH 高雄","到達地":"OKA 沖繩","價格":"6,938","航空公司":"台灣虎航","購買平台":"官網","截圖連結":"2026-11-05台灣虎航","更新日期":"2026-10-14","_imgs":["screenshot/2026-11-05%E5%8F%B0%E7%81%A3%E8%99%8E%E8%88%AA/deal_screenshot.png","screenshot/2026-11-05%E5%8F%B0%E7%81%A3%E8%99%8E%E8%88%AA/deal_screenshot_2.png"]},{"日期":"2026-11-28","天數":"8","出發地":"ARN 斯德哥爾摩","到達地":"TPE 台北","價格":"13,319","航空公司":"中國東方航空","購買平台":"Trip.com","截圖連結":"2026-11-28中國東方航空","更新日期":"2026-10-15","_imgs":["screenshot/2026-11-28%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-26","天數":"8","出發地":"ARN 斯德哥爾摩","到達地":"TPE 台北","價格":"13,319","航空公司":"中國東方航空","購買平台":"Trip.com","截圖連結":"2026-11-26中國東方航空","更新日期":"2026-10-15","_imgs":["screenshot/2026-11-26%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]}];
+  var DEALS = [{"日期":"2027-01-19","天數":"9","出發地":"NRT 東京成田","到達地":"LAX 洛杉磯","價格":"16566","航空公司":"ZIPAIR","購買平台":"官網","截圖連結":"2027-01-19ZIPAIR","更新日期":"2026-10-14","_imgs":["screenshot/2027-01-19ZIPAIR/deal_screenshot.png","screenshot/2027-01-19ZIPAIR/deal_screenshot_2.png"]},{"日期":"2026-11-05","天數":"7","出發地":"KHH 高雄","到達地":"OKA 沖繩","價格":"6,938","航空公司":"台灣虎航","購買平台":"官網","截圖連結":"2026-11-05台灣虎航","更新日期":"2026-10-14","_imgs":["screenshot/2026-11-05%E5%8F%B0%E7%81%A3%E8%99%8E%E8%88%AA/deal_screenshot.png","screenshot/2026-11-05%E5%8F%B0%E7%81%A3%E8%99%8E%E8%88%AA/deal_screenshot_2.png"]},{"日期":"2026-11-28","天數":"8","出發地":"ARN 斯德哥爾摩","到達地":"TPE 台北","價格":"13,319","航空公司":"中國東方航空","購買平台":"Trip.com","截圖連結":"2026-11-28中國東方航空","更新日期":"2026-10-15","_imgs":["screenshot/2026-11-28%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-26","天數":"8","出發地":"ARN 斯德哥爾摩","到達地":"TPE 台北","價格":"13,319","航空公司":"中國東方航空","購買平台":"Trip.com","截圖連結":"2026-11-26中國東方航空","更新日期":"2026-10-15","_imgs":["screenshot/2026-11-26%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-11-19","天數":"8","出發地":"ARN 斯德哥爾摩","到達地":"TPE 台北","價格":"13,319","航空公司":"中國東方航空","購買平台":"Trip.com","截圖連結":"2026-11-19中國東方航空","更新日期":"2026-10-15","_imgs":["screenshot/2026-11-19%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]}];
 
   var depF         = document.getElementById('filter-departure');
   var destF        = document.getElementById('filter-destination');
