@@ -10,7 +10,7 @@
   <title>✈️ 便宜機票 Deals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1791921649389">
+  <link rel="stylesheet" href="style.css?v=1791963513155">
 </head>
 <body>
 
@@ -21,8 +21,8 @@
     <h1><span class="header-icon">✈️</span><span class="header-title-text">便宜機票 Deals</span></h1>
     <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
     <div class="header-stats">
-      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">3</span><span>筆 Deal</span></div>
-      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/10/14 上午04:00</span></div>
+      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">4</span><span>筆 Deal</span></div>
+      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/10/14 下午03:38</span></div>
     </div>
   </header>
 
@@ -112,7 +112,7 @@
 
 <script>
 (function() {
-  var DEALS = [{"日期":"2027-02-10","天數":"12","出發地":"SIN 新加坡","到達地":"SFO 舊金山","價格":"24,595","航空公司":"日本航空","購買平台":"Trip.com or 官網","截圖連結":"2027-02-10日本航空","更新日期":"2026-10-12","_imgs":["screenshot/2027-02-10%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2027-02-10%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot_2.png"]},{"日期":"2027-02-09","天數":"12","出發地":"SIN 新加坡","到達地":"LAX 洛杉磯","價格":"25363","航空公司":"日本航空","購買平台":"官網","截圖連結":"2027-02-09日本航空","更新日期":"2026-10-12","_imgs":["screenshot/2027-02-09%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2027-02-09%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot_2.png","screenshot/2027-02-09%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot_3.png"]},{"日期":"2027-01-19","天數":"9","出發地":"NRT 東京成田","到達地":"LAX 洛杉磯","價格":"16566","航空公司":"ZIPAIR","購買平台":"官網","截圖連結":"2027-01-19ZIPAIR","更新日期":"2026-10-14","_imgs":["screenshot/2027-01-19ZIPAIR/deal_screenshot.png","screenshot/2027-01-19ZIPAIR/deal_screenshot_2.png"]}];
+  var DEALS = [{"日期":"2027-02-10","天數":"12","出發地":"SIN 新加坡","到達地":"SFO 舊金山","價格":"24,595","航空公司":"日本航空","購買平台":"Trip.com or 官網","截圖連結":"2027-02-10日本航空","更新日期":"2026-10-12","_imgs":["screenshot/2027-02-10%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2027-02-10%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot_2.png"]},{"日期":"2027-02-09","天數":"12","出發地":"SIN 新加坡","到達地":"LAX 洛杉磯","價格":"25363","航空公司":"日本航空","購買平台":"官網","截圖連結":"2027-02-09日本航空","更新日期":"2026-10-12","_imgs":["screenshot/2027-02-09%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2027-02-09%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot_2.png","screenshot/2027-02-09%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA/deal_screenshot_3.png"]},{"日期":"2027-01-19","天數":"9","出發地":"NRT 東京成田","到達地":"LAX 洛杉磯","價格":"16566","航空公司":"ZIPAIR","購買平台":"官網","截圖連結":"2027-01-19ZIPAIR","更新日期":"2026-10-14","_imgs":["screenshot/2027-01-19ZIPAIR/deal_screenshot.png","screenshot/2027-01-19ZIPAIR/deal_screenshot_2.png"]},{"日期":"2026-11-05","天數":"7","出發地":"KHH 高雄","到達地":"OKA 沖繩","價格":"6,938","航空公司":"台灣虎航","購買平台":"官網","截圖連結":"2026-11-05台灣虎航","更新日期":"2026-10-14","_imgs":["screenshot/2026-11-05%E5%8F%B0%E7%81%A3%E8%99%8E%E8%88%AA/deal_screenshot.png"]}];
 
   var depF         = document.getElementById('filter-departure');
   var destF        = document.getElementById('filter-destination');
