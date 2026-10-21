@@ -10,7 +10,7 @@
   <title>✈️ 便宜機票 Deals</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=1792312704789">
+  <link rel="stylesheet" href="style.css?v=1792546244644">
 </head>
 <body>
 
@@ -21,8 +21,8 @@
     <h1><span class="header-icon">✈️</span><span class="header-title-text">便宜機票 Deals</span></h1>
     <p class="subtitle">最近 3 天的超值機票優惠，即時更新</p>
     <div class="header-stats">
-      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">11</span><span>筆 Deal</span></div>
-      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/10/18 下午04:38</span></div>
+      <div class="stat-item"><span>目前顯示</span><span class="stat-value" id="deal-count">1</span><span>筆 Deal</span></div>
+      <div class="stat-item"><span>最後更新</span><span class="stat-value">2026/10/21 上午09:30</span></div>
     </div>
   </header>
 
@@ -112,7 +112,7 @@
 
 <script>
 (function() {
-  var DEALS = [{"日期":"2026-10-28","天數":"單程","出發地":"ITM 大阪","到達地":"LAX 洛杉磯","價格":"6,217","航空公司":"日本航空.美國航空","購買平台":"Trip.com日本站","截圖連結":"2026-10-28日本航空.美國航空","更新日期":"2026-10-18","_imgs":["screenshot/2026-10-28%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA.%E7%BE%8E%E5%9C%8B%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-10-28","天數":"單程","出發地":"NGO 名古屋","到達地":"LAX 洛杉磯","價格":"6,242","航空公司":"日本航空.美國航空","購買平台":"Trip.com日本站","截圖連結":"2026-10-28日本航空.美國航空2","更新日期":"2026-10-18","_imgs":["screenshot/2026-10-28%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA.%E7%BE%8E%E5%9C%8B%E8%88%AA%E7%A9%BA2/deal_screenshot.jpg"]},{"日期":"2026-11-05","天數":"單程","出發地":"LAX 洛杉磯","到達地":"NRT 東京成田","價格":"11,281","航空公司":"普萊米婭航空","購買平台":"Trip.com日本站","截圖連結":"2026-11-05普萊米婭航空","更新日期":"2026-10-18","_imgs":["screenshot/2026-11-05%E6%99%AE%E8%90%8A%E7%B1%B3%E5%A9%AD%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-12-24","天數":"12","出發地":"TPE 台北","到達地":"LGA 紐約","價格":"26,724","航空公司":"聯合航空","購買平台":"官網","截圖連結":"2026-12-24聯合航空","更新日期":"2026-10-18","_imgs":["screenshot/2026-12-24%E8%81%AF%E5%90%88%E8%88%AA%E7%A9%BA/deal_screenshot.png","screenshot/2026-12-24%E8%81%AF%E5%90%88%E8%88%AA%E7%A9%BA/deal_screenshot_2.png","screenshot/2026-12-24%E8%81%AF%E5%90%88%E8%88%AA%E7%A9%BA/deal_screenshot_3.png"]},{"日期":"2026-10-29","天數":"單程","出發地":"FUK 福岡","到達地":"LAX 洛杉磯","價格":"6,363","航空公司":"日本航空.美國航空","購買平台":"Trip.com日本站","截圖連結":"2026-10-29日本航空.美國航空","更新日期":"2026-10-18","_imgs":["screenshot/2026-10-29%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA.%E7%BE%8E%E5%9C%8B%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-10-28","天數":"單程","出發地":"AKJ 旭川","到達地":"LAX 洛杉磯","價格":"6,412","航空公司":"日本航空.美國航空","購買平台":"Trip.com日本站","截圖連結":"2026-10-28日本航空.美國航空3","更新日期":"2026-10-18","_imgs":["screenshot/2026-10-28%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA.%E7%BE%8E%E5%9C%8B%E8%88%AA%E7%A9%BA3/deal_screenshot.png"]},{"日期":"2026-10-28","天數":"單程","出發地":"HKD 函館","到達地":"LAX 洛杉磯","價格":"6,458","航空公司":"日本航空.美國航空","購買平台":"Trip.com日本站","截圖連結":"2026-10-28日本航空.美國航空4","更新日期":"2026-10-18","_imgs":["screenshot/2026-10-28%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA.%E7%BE%8E%E5%9C%8B%E8%88%AA%E7%A9%BA4/deal_screenshot.png"]},{"日期":"2026-10-28","天數":"單程","出發地":"CTS 札幌","到達地":"LAX 洛杉磯","價格":"6,439","航空公司":"日本航空.美國航空","購買平台":"Trip.com日本站","截圖連結":"2026-10-28日本航空.美國航空5","更新日期":"2026-10-18","_imgs":["screenshot/2026-10-28%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA.%E7%BE%8E%E5%9C%8B%E8%88%AA%E7%A9%BA5/deal_screenshot.png"]},{"日期":"2026-10-28","天數":"單程","出發地":"KMJ 熊本","到達地":"LAX 洛杉磯","價格":"6,408","航空公司":"日本航空.美國航空","購買平台":"Trip.com日本站","截圖連結":"2026-10-28日本航空.美國航空6","更新日期":"2026-10-18","_imgs":["screenshot/2026-10-28%E6%97%A5%E6%9C%AC%E8%88%AA%E7%A9%BA.%E7%BE%8E%E5%9C%8B%E8%88%AA%E7%A9%BA6/deal_screenshot.png"]},{"日期":"2026-12-01","天數":"11","出發地":"ATH 雅典","到達地":"ICN 首爾","價格":"15,301","航空公司":"衣索比亞航空","購買平台":"Trip.com","截圖連結":"2026-12-01衣索比亞航空","更新日期":"2026-10-18","_imgs":["screenshot/2026-12-01%E8%A1%A3%E7%B4%A2%E6%AF%94%E4%BA%9E%E8%88%AA%E7%A9%BA/deal_screenshot.png"]},{"日期":"2026-12-03","天數":"11","出發地":"ATH 雅典","到達地":"ICN 首爾","價格":"15,301","航空公司":"衣索比亞航空","購買平台":"Trip.com","截圖連結":"2026-12-04衣索比亞航空","更新日期":"2026-10-18","_imgs":["screenshot/2026-12-04%E8%A1%A3%E7%B4%A2%E6%AF%94%E4%BA%9E%E8%88%AA%E7%A9%BA/deal_screenshot.png"]}];
+  var DEALS = [{"日期":"2026-11-26","天數":"13","出發地":"ARN 斯德哥爾摩","到達地":"MFM 澳門","價格":"12,920","航空公司":"中國東方航空","購買平台":"Mytrip","截圖連結":"2026-11-26中國東方航空","更新日期":"2026-10-21","_imgs":["screenshot/2026-11-26%E4%B8%AD%E5%9C%8B%E6%9D%B1%E6%96%B9%E8%88%AA%E7%A9%BA/deal_screenshot.png"]}];
 
   var depF         = document.getElementById('filter-departure');
   var destF        = document.getElementById('filter-destination');
